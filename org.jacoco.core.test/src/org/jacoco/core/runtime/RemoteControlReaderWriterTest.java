@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import org.jacoco.core.data.ExecutionDataReader;
 import org.jacoco.core.data.ExecutionDataReaderWriterTest;
 import org.jacoco.core.data.ExecutionDataWriter;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ public class RemoteControlReaderWriterTest
 
 	@Test(expected = IOException.class)
 	public void testNoRemoteCommandVisitor() throws IOException {
-		writer.visitDumpCommand(false, false);
+		writer.visitDumpCommand(TraceValue.get(), false, false);
 		final RemoteControlReader reader = createReader();
 		reader.read();
 	}
@@ -72,13 +73,14 @@ public class RemoteControlReaderWriterTest
 
 	private void testVisitDump(boolean doDump, boolean doReset)
 			throws IOException {
-		writer.visitDumpCommand(doDump, doReset);
+		writer.visitDumpCommand(TraceValue.get(), doDump, doReset);
 		final RemoteControlReader reader = createReader();
 		final StringBuilder calls = new StringBuilder();
 		reader.setRemoteCommandVisitor(new IRemoteCommandVisitor() {
 
-			public void visitDumpCommand(boolean dump, boolean reset) {
-				calls.append("cmd(" + dump + "," + reset + ")");
+			public void visitDumpCommand(String traceId, boolean dump,
+					boolean reset) {
+				calls.append("cmd(" + traceId + "," + dump + "," + reset + ")");
 			}
 		});
 		assertFalse(reader.read());

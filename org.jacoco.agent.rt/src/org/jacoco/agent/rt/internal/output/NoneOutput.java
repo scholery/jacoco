@@ -25,7 +25,7 @@ public class NoneOutput implements IAgentOutput {
 		// Nothing to do
 	}
 
-	public void writeExecutionData(final boolean reset) {
+	public void writeExecutionData(final String traceId, final boolean reset) {
 		// Nothing to do
 	}
 

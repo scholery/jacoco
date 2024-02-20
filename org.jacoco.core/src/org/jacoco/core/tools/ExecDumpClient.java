@@ -25,6 +25,7 @@ import org.jacoco.core.runtime.RemoteControlWriter;
  */
 public class ExecDumpClient {
 
+	private String traceId;
 	private boolean dump;
 	private boolean reset;
 	private int retryCount;
@@ -40,6 +41,16 @@ public class ExecDumpClient {
 		this.reset = false;
 		this.retryCount = 0;
 		this.setRetryDelay(1000);
+	}
+
+	/**
+	 * Specifies which traceId a dump should be requested
+	 *
+	 * @param traceId
+	 *            <code>default</code> if a dump should be requested
+	 */
+	public void setTraceId(final String traceId) {
+		this.traceId = traceId;
 	}
 
 	/**
@@ -123,7 +134,7 @@ public class ExecDumpClient {
 			remoteReader
 					.setExecutionDataVisitor(loader.getExecutionDataStore());
 
-			remoteWriter.visitDumpCommand(dump, reset);
+			remoteWriter.visitDumpCommand(traceId, dump, reset);
 
 			if (!remoteReader.read()) {
 				throw new IOException("Socket closed unexpectedly.");

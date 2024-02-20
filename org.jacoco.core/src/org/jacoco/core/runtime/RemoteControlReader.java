@@ -63,9 +63,10 @@ public class RemoteControlReader extends ExecutionDataReader {
 		if (remoteCommandVisitor == null) {
 			throw new IOException("No remote command visitor.");
 		}
+		final String traceId = in.readUTF();
 		final boolean dump = in.readBoolean();
 		final boolean reset = in.readBoolean();
-		remoteCommandVisitor.visitDumpCommand(dump, reset);
+		remoteCommandVisitor.visitDumpCommand(traceId, dump, reset);
 	}
 
 }

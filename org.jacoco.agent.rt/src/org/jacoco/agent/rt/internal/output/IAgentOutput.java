@@ -53,6 +53,6 @@ public interface IAgentOutput {
 	 * @throws IOException
 	 *             in case writing fails
 	 */
-	void writeExecutionData(boolean reset) throws IOException;
+	void writeExecutionData(String traceId, boolean reset) throws IOException;
 
 }

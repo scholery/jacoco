@@ -41,6 +41,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.internal.Pack200Streams;
 import org.jacoco.core.internal.data.CRC64;
 import org.jacoco.core.test.TargetLoader;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -164,7 +165,7 @@ public class AnalyzerTest {
 		final byte[] bytes = TargetLoader
 				.getClassDataAsBytes(AnalyzerTest.class);
 		executionData.get(Long.valueOf(CRC64.classId(bytes)),
-				"org/jacoco/core/analysis/AnalyzerTest", 400);
+				"org/jacoco/core/analysis/AnalyzerTest", TraceValue.get(), 400);
 		analyzer.analyzeClass(bytes, "Test");
 		assertFalse(classes.get("org/jacoco/core/analysis/AnalyzerTest")
 				.isNoMatch());
@@ -173,7 +174,7 @@ public class AnalyzerTest {
 	@Test
 	public void testAnalyzeClassNoIdMatch() throws IOException {
 		executionData.get(Long.valueOf(0),
-				"org/jacoco/core/analysis/AnalyzerTest", 400);
+				"org/jacoco/core/analysis/AnalyzerTest", TraceValue.get(), 400);
 		analyzer.analyzeClass(
 				TargetLoader.getClassDataAsBytes(AnalyzerTest.class), "Test");
 		assertTrue(classes.get("org/jacoco/core/analysis/AnalyzerTest")

@@ -29,6 +29,7 @@ import org.jacoco.core.data.SessionInfoStore;
 import org.jacoco.core.runtime.RemoteControlReader;
 import org.jacoco.core.runtime.RemoteControlWriter;
 import org.jacoco.core.runtime.RuntimeData;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -151,7 +152,7 @@ public class TcpConnectionTest extends ExecutorTestBase {
 
 		assertBlocks(f);
 
-		remoteWriter.visitDumpCommand(true, false);
+		remoteWriter.visitDumpCommand(TraceValue.get(), true, false);
 		readAndAssertData();
 
 		con.close();
@@ -212,7 +213,8 @@ public class TcpConnectionTest extends ExecutorTestBase {
 		assertEquals(1, infos.size());
 		assertEquals("stubid", infos.get(0).getId());
 
-		assertEquals("Foo", execStore.get(0x12345678).getName());
+		assertEquals("Foo",
+				execStore.get(0x12345678, TraceValue.get()).getName());
 	}
 
 	@Test
@@ -236,7 +238,7 @@ public class TcpConnectionTest extends ExecutorTestBase {
 
 		assertBlocks(f);
 
-		remoteWriter.visitDumpCommand(false, true);
+		remoteWriter.visitDumpCommand(TraceValue.get(), false, true);
 
 		final RemoteControlReader remoteReader = new RemoteControlReader(
 				mockConnection.getSocketB().getInputStream());

@@ -22,6 +22,8 @@ public interface IRemoteCommandVisitor {
 	/**
 	 * Requests a execution data dump with an optional reset.
 	 *
+	 * @param traceId
+	 *            <code>str</code>which the trace related data should be dumped
 	 * @param dump
 	 *            <code>true</code> if the dump should be executed
 	 * @param reset
@@ -29,6 +31,7 @@ public interface IRemoteCommandVisitor {
 	 * @throws IOException
 	 *             in case of problems with the remote connection
 	 */
-	void visitDumpCommand(boolean dump, boolean reset) throws IOException;
+	void visitDumpCommand(String traceId, boolean dump, boolean reset)
+			throws IOException;
 
 }

@@ -57,11 +57,12 @@ public class FileOutput implements IAgentOutput {
 		openFile().close();
 	}
 
-	public void writeExecutionData(final boolean reset) throws IOException {
+	public void writeExecutionData(final String traceId, final boolean reset)
+			throws IOException {
 		final OutputStream output = openFile();
 		try {
 			final ExecutionDataWriter writer = new ExecutionDataWriter(output);
-			data.collect(writer, writer, reset);
+			data.collect(traceId, writer, writer, reset);
 		} finally {
 			output.close();
 		}

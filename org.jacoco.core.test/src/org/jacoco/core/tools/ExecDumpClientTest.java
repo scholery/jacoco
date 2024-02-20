@@ -168,8 +168,8 @@ public class ExecDumpClientTest {
 		final RemoteControlReader reader = new RemoteControlReader(
 				socket.getInputStream());
 		reader.setRemoteCommandVisitor(new IRemoteCommandVisitor() {
-			public void visitDumpCommand(boolean dump, boolean reset)
-					throws IOException {
+			public void visitDumpCommand(String traceId, boolean dump,
+					boolean reset) throws IOException {
 				dumpRequested = dump;
 				resetRequested = reset;
 				if (dump) {

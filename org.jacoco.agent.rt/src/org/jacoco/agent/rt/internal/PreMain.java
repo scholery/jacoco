@@ -18,6 +18,7 @@ import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.runtime.IRuntime;
 import org.jacoco.core.runtime.InjectedClassRuntime;
 import org.jacoco.core.runtime.ModifiedSystemClassRuntime;
+import org.jacoco.core.trace.WebClassFileTransformer;
 
 /**
  * The agent which is referred as the <code>Premain-Class</code>. The agent
@@ -50,6 +51,7 @@ public final class PreMain {
 		runtime.startup(agent.getData());
 		inst.addTransformer(new CoverageTransformer(runtime, agentOptions,
 				IExceptionLogger.SYSTEM_ERR));
+		inst.addTransformer(new WebClassFileTransformer());
 	}
 
 	private static IRuntime createRuntime(final Instrumentation inst)

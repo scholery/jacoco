@@ -29,6 +29,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.data.ExecutionDataWriter;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.data.SessionInfoStore;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -119,8 +120,8 @@ public class ExecFileLoaderTest {
 		final FileOutputStream out = new FileOutputStream(file);
 		final ExecutionDataWriter writer = new ExecutionDataWriter(out);
 		final int value = id.length();
-		writer.visitClassExecution(
-				new ExecutionData(value, id, new boolean[] { true }));
+		writer.visitClassExecution(new ExecutionData(value, id,
+				TraceValue.get(), new boolean[] { true }));
 		writer.visitSessionInfo(new SessionInfo(id, value, value));
 		out.close();
 		return file;
@@ -151,7 +152,8 @@ public class ExecFileLoaderTest {
 		assertEquals(expected.length, infos.size());
 		int idx = 0;
 		for (String id : expected) {
-			assertEquals(id, execStore.get(id.length()).getName());
+			assertEquals(id,
+					execStore.get(id.length(), TraceValue.get()).getName());
 			assertEquals(id, infos.get(idx++).getId());
 		}
 	}

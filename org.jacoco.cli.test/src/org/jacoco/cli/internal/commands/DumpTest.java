@@ -114,8 +114,8 @@ public class DumpTest extends CommandTestBase {
 				socket.getInputStream());
 		reader.setRemoteCommandVisitor(new IRemoteCommandVisitor() {
 
-			public void visitDumpCommand(boolean dump, boolean reset)
-					throws IOException {
+			public void visitDumpCommand(String traceId, boolean dump,
+					boolean reset) throws IOException {
 				writer.sendCmdOk();
 			}
 		});

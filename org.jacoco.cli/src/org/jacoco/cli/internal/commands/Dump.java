@@ -21,6 +21,7 @@ import org.jacoco.cli.internal.Command;
 import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.tools.ExecDumpClient;
 import org.jacoco.core.tools.ExecFileLoader;
+import org.jacoco.core.trace.TraceValue;
 import org.kohsuke.args4j.Option;
 
 /**
@@ -43,6 +44,9 @@ public class Dump extends Command {
 	@Option(name = "--retry", usage = "number of retries (default 10)", metaVar = "<count>")
 	int retrycount = 10;
 
+	@Option(name = "--traceId", usage = "traceId of execution data to dump", metaVar = "<traceId>")
+	String traceId = TraceValue.DEFAULT_TRACE_ID;
+
 	@Override
 	public String description() {
 		return "Request execution data from a JaCoCo agent running in 'tcpserver' output mode.";
@@ -64,6 +68,7 @@ public class Dump extends Command {
 				err.printf("[WARN] %s.%n", exception.getMessage());
 			}
 		};
+		client.setTraceId(traceId);
 		client.setReset(reset);
 		client.setRetryCount(retrycount);
 

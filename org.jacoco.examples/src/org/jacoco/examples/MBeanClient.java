@@ -36,7 +36,9 @@ public final class MBeanClient {
 	 * Execute the example.
 	 *
 	 * @param args
+	 *            args
 	 * @throws Exception
+	 *             ex
 	 */
 	public static void main(final String[] args) throws Exception {
 		// Open connection to the coverage agent:

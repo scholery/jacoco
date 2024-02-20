@@ -52,9 +52,10 @@ public class RemoteControlWriter extends ExecutionDataWriter
 		out.writeByte(RemoteControlWriter.BLOCK_CMDOK);
 	}
 
-	public void visitDumpCommand(final boolean dump, final boolean reset)
-			throws IOException {
+	public void visitDumpCommand(String traceId, final boolean dump,
+			final boolean reset) throws IOException {
 		out.writeByte(RemoteControlWriter.BLOCK_CMDDUMP);
+		out.writeUTF(traceId);
 		out.writeBoolean(dump);
 		out.writeBoolean(reset);
 	}

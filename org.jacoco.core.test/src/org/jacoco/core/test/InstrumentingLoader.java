@@ -20,6 +20,7 @@ import org.jacoco.core.instr.Instrumenter;
 import org.jacoco.core.runtime.IRuntime;
 import org.jacoco.core.runtime.RuntimeData;
 import org.jacoco.core.runtime.SystemPropertiesRuntime;
+import org.jacoco.core.trace.TraceValue;
 
 /**
  * Class loader which loads classes from another class loader and instruments
@@ -80,7 +81,7 @@ public final class InstrumentingLoader extends ClassLoader {
 
 	public ExecutionDataStore collect() {
 		final ExecutionDataStore store = new ExecutionDataStore();
-		data.collect(store, new SessionInfoStore(), false);
+		data.collect(TraceValue.get(), store, new SessionInfoStore(), false);
 		runtime.shutdown();
 		return store;
 	}

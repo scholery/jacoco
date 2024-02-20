@@ -20,6 +20,7 @@ import java.net.Socket;
 import org.jacoco.core.data.ExecutionDataWriter;
 import org.jacoco.core.runtime.RemoteControlReader;
 import org.jacoco.core.runtime.RemoteControlWriter;
+import org.jacoco.core.trace.TraceValue;
 
 /**
  * This example connects to a coverage agent that run in output mode
@@ -38,7 +39,9 @@ public final class ExecutionDataClient {
 	 * Starts the execution data request.
 	 *
 	 * @param args
+	 *            args
 	 * @throws IOException
+	 *             ex
 	 */
 	public static void main(final String[] args) throws IOException {
 		final FileOutputStream localFile = new FileOutputStream(DESTFILE);
@@ -55,7 +58,7 @@ public final class ExecutionDataClient {
 		reader.setExecutionDataVisitor(localWriter);
 
 		// Send a dump command and read the response:
-		writer.visitDumpCommand(true, false);
+		writer.visitDumpCommand(TraceValue.get(), true, false);
 		if (!reader.read()) {
 			throw new IOException("Socket closed unexpectedly.");
 		}

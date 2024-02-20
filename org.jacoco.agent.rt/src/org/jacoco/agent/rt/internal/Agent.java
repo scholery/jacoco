@@ -29,6 +29,7 @@ import org.jacoco.core.runtime.AbstractRuntime;
 import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.runtime.AgentOptions.OutputMode;
 import org.jacoco.core.runtime.RuntimeData;
+import org.jacoco.core.trace.TraceValue;
 
 /**
  * The agent manages the life cycle of JaCoCo runtime.
@@ -142,7 +143,7 @@ public class Agent implements IAgent {
 	public void shutdown() {
 		try {
 			if (options.getDumpOnExit()) {
-				output.writeExecutionData(false);
+				output.writeExecutionData(TraceValue.get(), false);
 			}
 			output.shutdown();
 			if (jmxRegistration != null) {
@@ -208,7 +209,7 @@ public class Agent implements IAgent {
 		final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
 			final ExecutionDataWriter writer = new ExecutionDataWriter(buffer);
-			data.collect(writer, writer, reset);
+			data.collect(TraceValue.get(), writer, writer, reset);
 		} catch (final IOException e) {
 			// Must not happen with ByteArrayOutputStream
 			throw new AssertionError(e);
@@ -216,8 +217,9 @@ public class Agent implements IAgent {
 		return buffer.toByteArray();
 	}
 
-	public void dump(final boolean reset) throws IOException {
-		output.writeExecutionData(reset);
+	public void dump(final String traceId, final boolean reset)
+			throws IOException {
+		output.writeExecutionData(traceId, reset);
 	}
 
 }

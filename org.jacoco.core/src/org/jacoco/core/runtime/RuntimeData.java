@@ -18,6 +18,7 @@ import org.jacoco.core.data.IExecutionDataVisitor;
 import org.jacoco.core.data.ISessionInfoVisitor;
 import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.internal.instr.InstrSupport;
+import org.jacoco.core.trace.TraceValue;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -49,7 +50,8 @@ public class RuntimeData {
 	 * identifier is generated from the host name and a random number. This
 	 * method can be called at any time.
 	 *
-	 * @see #collect(IExecutionDataVisitor, ISessionInfoVisitor, boolean)
+	 * @see #collect(String, IExecutionDataVisitor, ISessionInfoVisitor,
+	 *      boolean)
 	 * @param id
 	 *            new session identifier
 	 */
@@ -71,6 +73,8 @@ public class RuntimeData {
 	 * Collects the current execution data and writes it to the given
 	 * {@link IExecutionDataVisitor} object.
 	 *
+	 * @param traceId
+	 *            the trace related data should be dumped
 	 * @param executionDataVisitor
 	 *            handler to write coverage data to
 	 * @param sessionInfoVisitor
@@ -79,13 +83,14 @@ public class RuntimeData {
 	 *            if <code>true</code> the current coverage information is also
 	 *            cleared
 	 */
-	public final void collect(final IExecutionDataVisitor executionDataVisitor,
+	public final void collect(final String traceId,
+			final IExecutionDataVisitor executionDataVisitor,
 			final ISessionInfoVisitor sessionInfoVisitor, final boolean reset) {
 		synchronized (store) {
 			final SessionInfo info = new SessionInfo(sessionId, startTimeStamp,
 					System.currentTimeMillis());
 			sessionInfoVisitor.visitSessionInfo(info);
-			store.accept(executionDataVisitor);
+			store.accept(traceId, executionDataVisitor);
 			if (reset) {
 				reset();
 			}
@@ -118,7 +123,9 @@ public class RuntimeData {
 	public ExecutionData getExecutionData(final Long id, final String name,
 			final int probecount) {
 		synchronized (store) {
-			return store.get(id, name, probecount);
+			String traceId = TraceValue.get();
+			System.out.println("getExecutionData traceId===> " + traceId);
+			return store.get(id, name, traceId, probecount);
 		}
 	}
 

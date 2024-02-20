@@ -60,8 +60,11 @@ class ClassFieldProbeArrayStrategy implements IProbeArrayStrategy {
 	}
 
 	public void addMembers(final ClassVisitor cv, final int probeCount) {
-		createDataField(cv);
-		createInitMethod(cv, probeCount);
+		// createDataField(cv);
+		// createInitMethod(cv, probeCount);
+		InstrSupport.createDataFieldMap(cv);
+		InstrSupport.createInitMethodMap(cv, probeCount, classId, className,
+				accessorGenerator, withFrames);
 	}
 
 	private void createDataField(final ClassVisitor cv) {

@@ -28,6 +28,7 @@ import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.tools.ExecFileLoader;
+import org.jacoco.core.trace.TraceValue;
 import org.jacoco.report.DirectorySourceFileLocator;
 import org.jacoco.report.FileMultiReportOutput;
 import org.jacoco.report.IReportVisitor;
@@ -71,6 +72,9 @@ public class Report extends Command {
 
 	@Option(name = "--html", usage = "output directory for the HTML report", metaVar = "<dir>")
 	File html;
+
+	@Option(name = "--traceId", usage = "traceId of execution data to analysis", metaVar = "<traceId>")
+	String traceId = TraceValue.DEFAULT_TRACE_ID;
 
 	@Override
 	public String description() {
@@ -135,7 +139,7 @@ public class Report extends Command {
 				Integer.valueOf(bundle.getClassCounter().getTotalCount()));
 		final IReportVisitor visitor = createReportVisitor();
 		visitor.visitInfo(loader.getSessionInfoStore().getInfos(),
-				loader.getExecutionDataStore().getContents());
+				loader.getExecutionDataStore().getContents(traceId));
 		visitor.visitBundle(bundle, getSourceLocator());
 		visitor.visitEnd();
 	}

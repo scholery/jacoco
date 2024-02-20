@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Test;
 
 /**
@@ -26,7 +27,8 @@ public class ExecutionDataTest {
 
 	@Test
 	public void testCreateEmpty() {
-		final ExecutionData e = new ExecutionData(5, "Example", 3);
+		final ExecutionData e = new ExecutionData(5, "Example",
+				TraceValue.get(), 3);
 		assertEquals(5, e.getId());
 		assertEquals("Example", e.getName());
 		assertEquals(3, e.getProbes().length);
@@ -38,7 +40,8 @@ public class ExecutionDataTest {
 	@Test
 	public void testGetters() {
 		final boolean[] data = new boolean[0];
-		final ExecutionData e = new ExecutionData(5, "Example", data);
+		final ExecutionData e = new ExecutionData(5, "Example",
+				TraceValue.get(), data);
 		assertEquals(5, e.getId());
 		assertEquals("Example", e.getName());
 		assertSame(data, e.getProbes());
@@ -47,7 +50,7 @@ public class ExecutionDataTest {
 	@Test
 	public void testReset() {
 		final ExecutionData e = new ExecutionData(5, "Example",
-				new boolean[] { true, false, true });
+				TraceValue.get(), new boolean[] { true, false, true });
 		e.reset();
 		assertFalse(e.getProbes()[0]);
 		assertFalse(e.getProbes()[1]);
@@ -57,7 +60,8 @@ public class ExecutionDataTest {
 	@Test
 	public void testHasHits() {
 		final boolean[] probes = new boolean[] { false, false, false };
-		final ExecutionData e = new ExecutionData(5, "Example", probes);
+		final ExecutionData e = new ExecutionData(5, "Example",
+				TraceValue.get(), probes);
 		assertFalse(e.hasHits());
 		probes[1] = true;
 		assertTrue(e.hasHits());
@@ -66,16 +70,17 @@ public class ExecutionDataTest {
 	@Test
 	public void testHasHits_empty() {
 		final boolean[] probes = new boolean[] {};
-		final ExecutionData e = new ExecutionData(5, "Example", probes);
+		final ExecutionData e = new ExecutionData(5, "Example",
+				TraceValue.get(), probes);
 		assertFalse(e.hasHits());
 	}
 
 	@Test
 	public void testMerge() {
 		final ExecutionData a = new ExecutionData(5, "Example",
-				new boolean[] { false, true, false, true });
+				TraceValue.get(), new boolean[] { false, true, false, true });
 		final ExecutionData b = new ExecutionData(5, "Example",
-				new boolean[] { false, false, true, true });
+				TraceValue.get(), new boolean[] { false, false, true, true });
 		a.merge(b);
 
 		// b is merged into a:
@@ -94,9 +99,9 @@ public class ExecutionDataTest {
 	@Test
 	public void testMergeSubtract() {
 		final ExecutionData a = new ExecutionData(5, "Example",
-				new boolean[] { false, true, false, true });
+				TraceValue.get(), new boolean[] { false, true, false, true });
 		final ExecutionData b = new ExecutionData(5, "Example",
-				new boolean[] { false, false, true, true });
+				TraceValue.get(), new boolean[] { false, false, true, true });
 		a.merge(b, false);
 
 		// b is subtracted from a:
@@ -115,35 +120,35 @@ public class ExecutionDataTest {
 	@Test
 	public void testAssertCompatibility() {
 		final ExecutionData a = new ExecutionData(5, "Example",
-				new boolean[] { true });
-		a.assertCompatibility(5, "Example", 1);
+				TraceValue.get(), new boolean[] { true });
+		a.assertCompatibility(5, "Example", TraceValue.get(), 1);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testAssertCompatibilityNegative1() {
 		final ExecutionData a = new ExecutionData(5, "Example",
-				new boolean[] { true });
-		a.assertCompatibility(55, "Example", 1);
+				TraceValue.get(), new boolean[] { true });
+		a.assertCompatibility(55, "Example", TraceValue.get(), 1);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testAssertCompatibilityNegative2() {
 		final ExecutionData a = new ExecutionData(5, "Example",
-				new boolean[] { true });
-		a.assertCompatibility(5, "Exxxample", 1);
+				TraceValue.get(), new boolean[] { true });
+		a.assertCompatibility(5, "Exxxample", TraceValue.get(), 1);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testAssertCompatibilityNegative3() {
 		final ExecutionData a = new ExecutionData(5, "Example",
-				new boolean[] { true });
-		a.assertCompatibility(5, "Example", 3);
+				TraceValue.get(), new boolean[] { true });
+		a.assertCompatibility(5, "Example", TraceValue.get(), 3);
 	}
 
 	@Test
 	public void testToString() {
 		final ExecutionData a = new ExecutionData(Long.MAX_VALUE, "Example",
-				new boolean[] { true });
+				TraceValue.get(), new boolean[] { true });
 		assertEquals("ExecutionData[name=Example, id=7fffffffffffffff]",
 				a.toString());
 	}

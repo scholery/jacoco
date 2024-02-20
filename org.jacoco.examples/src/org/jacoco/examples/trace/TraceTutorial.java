@@ -10,12 +10,15 @@
  *    Marc R. Hoffmann - initial API and implementation
  *
  *******************************************************************************/
-package org.jacoco.examples;
+package org.jacoco.examples.trace;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
@@ -34,69 +37,25 @@ import org.jacoco.core.trace.TraceValue;
  * will be instrumented and executed. Finally the coverage information will be
  * dumped.
  */
-public final class CoreTutorial {
-
-	/**
-	 * The test target we want to see code coverage for.
-	 */
-	public static class TestTarget implements Runnable {
-
-		public void run() {
-			isPrime(7);
-		}
-
-		private boolean isPrime(final int n) {
-			for (int i = 2; i * i <= n; i++) {
-				if ((n ^ i) == 0) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-	}
+public final class TraceTutorial {
 
 	/**
 	 * A class loader that loads classes from in-memory data.
 	 */
-	public static class MemoryClassLoader extends ClassLoader {
-
-		private final Map<String, byte[]> definitions = new HashMap<String, byte[]>();
-
-		/**
-		 * Add a in-memory representation of a class.
-		 *
-		 * @param name
-		 *            name of the class
-		 * @param bytes
-		 *            class definition
-		 */
-		public void addDefinition(final String name, final byte[] bytes) {
-			definitions.put(name, bytes);
-		}
-
-		@Override
-		protected Class<?> loadClass(final String name, final boolean resolve)
-				throws ClassNotFoundException {
-			final byte[] bytes = definitions.get(name);
-			if (bytes != null) {
-				return defineClass(name, bytes, 0, bytes.length);
-			}
-			return super.loadClass(name, resolve);
-		}
-
-	}
-
 	private final PrintStream out;
+	private final String targetName;
 
 	/**
 	 * Creates a new example instance printing to the given stream.
 	 *
 	 * @param out
 	 *            stream for outputs
+	 * @param targetName
+	 *            targetName
 	 */
-	public CoreTutorial(final PrintStream out) {
+	public TraceTutorial(final PrintStream out, final String targetName) {
 		this.out = out;
+		this.targetName = targetName;
 	}
 
 	/**
@@ -106,18 +65,19 @@ public final class CoreTutorial {
 	 *             in case of errors
 	 */
 	public void execute() throws Exception {
-		final String targetName = TestTarget.class.getName();
-
 		// For instrumentation and runtime we need a IRuntime instance
 		// to collect execution data:
 		final IRuntime runtime = new LoggerRuntime();
-
+		// final IRuntime runtime = new InjectedClassRuntime(Object.class,
+		// "$JaCoCo");
 		// The Instrumenter creates a modified version of our test target class
 		// that contains additional probes for execution data recording:
 		final Instrumenter instr = new Instrumenter(runtime);
 		InputStream original = getTargetClass(targetName);
 		final byte[] instrumented = instr.instrument(original, targetName);
 		original.close();
+		// test,zhucz
+		saveTargetClass(targetName, instrumented);
 
 		// Now we're ready to run our instrumented class and need to startup the
 		// runtime first:
@@ -132,7 +92,8 @@ public final class CoreTutorial {
 
 		// Here we execute our test target class through its Runnable interface:
 		final Runnable targetInstance = (Runnable) targetClass.newInstance();
-		targetInstance.run();
+		new Thread(targetInstance).start();
+		new Thread(targetInstance).start();
 
 		// At the end of test execution we collect execution data and shutdown
 		// the runtime:
@@ -171,6 +132,22 @@ public final class CoreTutorial {
 		return getClass().getResourceAsStream(resource);
 	}
 
+	private void saveTargetClass(final String name, final byte[] classB) {
+		final int dot = name.indexOf("$") >= 0 ? name.lastIndexOf("$") + 1
+				: name.indexOf(".") >= 0 ? name.lastIndexOf(".") + 1 : 0;
+		final String resource = name.substring(dot) + ".class";
+		String path = Thread.currentThread().getContextClassLoader()
+				.getResource("").getPath();
+		File file = new File(path + resource);
+		try (OutputStream out = new FileOutputStream(file)) {
+			out.write(classB);
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private void printCounter(final String unit, final ICounter counter) {
 		final Integer missed = Integer.valueOf(counter.getMissedCount());
 		final Integer total = Integer.valueOf(counter.getTotalCount());
@@ -198,7 +175,12 @@ public final class CoreTutorial {
 	 *             in case of errors
 	 */
 	public static void main(final String[] args) throws Exception {
-		new CoreTutorial(System.out).execute();
+		new TraceTutorial(System.out, TraceTestThread.class.getName())
+				.execute();
+		// new BBATutorial(System.out,BBATestMap.class.getName()).execute();
+		// new
+		// BBATutorial(System.out,BBATestMapForCode.class.getName()).execute();
+
 	}
 
 }

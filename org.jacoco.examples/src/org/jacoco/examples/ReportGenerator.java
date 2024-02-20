@@ -47,6 +47,7 @@ public class ReportGenerator {
 	 * Create a new generator based for the given project.
 	 *
 	 * @param projectDirectory
+	 *            dir
 	 */
 	public ReportGenerator(final File projectDirectory) {
 		this.title = projectDirectory.getName();
@@ -60,6 +61,7 @@ public class ReportGenerator {
 	 * Create the report.
 	 *
 	 * @throws IOException
+	 *             ex
 	 */
 	public void create() throws IOException {
 
@@ -127,6 +129,7 @@ public class ReportGenerator {
 	 *            Arguments to the application. This will be the location of the
 	 *            eclipse projects that will be used to generate reports for
 	 * @throws IOException
+	 *             ex
 	 */
 	public static void main(final String[] args) throws IOException {
 		for (int i = 0; i < args.length; i++) {

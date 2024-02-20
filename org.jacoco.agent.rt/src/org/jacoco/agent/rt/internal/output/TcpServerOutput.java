@@ -87,9 +87,10 @@ public class TcpServerOutput implements IAgentOutput {
 		worker.join();
 	}
 
-	public void writeExecutionData(final boolean reset) throws IOException {
+	public void writeExecutionData(final String traceId, final boolean reset)
+			throws IOException {
 		if (connection != null) {
-			connection.writeExecutionData(reset);
+			connection.writeExecutionData(traceId, reset);
 		}
 	}
 

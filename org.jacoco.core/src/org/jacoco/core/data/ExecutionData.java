@@ -27,6 +27,8 @@ public final class ExecutionData {
 
 	private final String name;
 
+	private final String traceId;
+
 	private final boolean[] probes;
 
 	/**
@@ -36,13 +38,16 @@ public final class ExecutionData {
 	 *            class identifier
 	 * @param name
 	 *            VM name
+	 * @param traceId
+	 *            trace value
 	 * @param probes
 	 *            probe data
 	 */
-	public ExecutionData(final long id, final String name,
+	public ExecutionData(final long id, final String name, final String traceId,
 			final boolean[] probes) {
 		this.id = id;
 		this.name = name;
+		this.traceId = traceId;
 		this.probes = probes;
 	}
 
@@ -54,13 +59,16 @@ public final class ExecutionData {
 	 *            class identifier
 	 * @param name
 	 *            VM name
+	 * @param traceId
+	 *            trace value
 	 * @param probeCount
 	 *            probe count
 	 */
-	public ExecutionData(final long id, final String name,
+	public ExecutionData(final long id, final String name, final String traceId,
 			final int probeCount) {
 		this.id = id;
 		this.name = name;
+		this.traceId = traceId;
 		this.probes = new boolean[probeCount];
 	}
 
@@ -81,6 +89,10 @@ public final class ExecutionData {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	public String getTraceId() {
+		return traceId;
 	}
 
 	/**
@@ -157,7 +169,7 @@ public final class ExecutionData {
 	 *            merge mode
 	 */
 	public void merge(final ExecutionData other, final boolean flag) {
-		assertCompatibility(other.getId(), other.getName(),
+		assertCompatibility(other.getId(), other.getName(), other.getTraceId(),
 				other.getProbes().length);
 		final boolean[] otherData = other.getProbes();
 		for (int i = 0; i < probes.length; i++) {
@@ -176,13 +188,16 @@ public final class ExecutionData {
 	 *            other class id, must be the same
 	 * @param name
 	 *            other name, must be equal to this name
+	 * @param traceId
+	 *            trace value
 	 * @param probecount
 	 *            probe data length, must be the same as for this data
 	 * @throws IllegalStateException
 	 *             if the given parameters do not match this instance
 	 */
 	public void assertCompatibility(final long id, final String name,
-			final int probecount) throws IllegalStateException {
+			final String traceId, final int probecount)
+			throws IllegalStateException {
 		if (this.id != id) {
 			throw new IllegalStateException(
 					format("Different ids (%016x and %016x).",
@@ -193,6 +208,11 @@ public final class ExecutionData {
 					format("Different class names %s and %s for id %016x.",
 							this.name, name, Long.valueOf(id)));
 		}
+		if (!this.traceId.equals(traceId)) {
+			throw new IllegalStateException(
+					format("Different traceId %s and %s for id %016x.",
+							this.traceId, traceId, Long.valueOf(id)));
+		}
 		if (this.probes.length != probecount) {
 			throw new IllegalStateException(format(
 					"Incompatible execution data for class %s with id %016x.",
@@ -202,8 +222,8 @@ public final class ExecutionData {
 
 	@Override
 	public String toString() {
-		return String.format("ExecutionData[name=%s, id=%016x]", name,
-				Long.valueOf(id));
+		return String.format("ExecutionData[traceId=%s, name=%s, id=%016x]",
+				traceId, name, Long.valueOf(id));
 	}
 
 }

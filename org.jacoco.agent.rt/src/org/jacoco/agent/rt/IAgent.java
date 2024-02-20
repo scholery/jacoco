@@ -60,12 +60,14 @@ public interface IAgent {
 	 * Triggers a dump of the current execution data through the configured
 	 * output.
 	 *
+	 * @param traceId
+	 *            trace value
 	 * @param reset
 	 *            if <code>true</code> the current execution data is cleared
 	 *            afterwards
 	 * @throws IOException
 	 *             if the output can't write execution data
 	 */
-	void dump(boolean reset) throws IOException;
+	void dump(final String traceId, boolean reset) throws IOException;
 
 }

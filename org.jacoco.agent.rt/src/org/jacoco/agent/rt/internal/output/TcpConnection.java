@@ -20,6 +20,7 @@ import org.jacoco.core.runtime.IRemoteCommandVisitor;
 import org.jacoco.core.runtime.RemoteControlReader;
 import org.jacoco.core.runtime.RemoteControlWriter;
 import org.jacoco.core.runtime.RuntimeData;
+import org.jacoco.core.trace.TraceValue;
 
 /**
  * Handler for a single socket based remote connection.
@@ -78,9 +79,10 @@ class TcpConnection implements IRemoteCommandVisitor {
 	 *            if <code>true</code> execution data is cleared afterwards
 	 * @throws IOException
 	 */
-	public void writeExecutionData(final boolean reset) throws IOException {
+	public void writeExecutionData(final String traceId, final boolean reset)
+			throws IOException {
 		if (initialized && !socket.isClosed()) {
-			visitDumpCommand(true, reset);
+			visitDumpCommand(traceId, true, reset);
 		}
 	}
 
@@ -97,10 +99,10 @@ class TcpConnection implements IRemoteCommandVisitor {
 
 	// === IRemoteCommandVisitor ===
 
-	public void visitDumpCommand(final boolean dump, final boolean reset)
-			throws IOException {
+	public void visitDumpCommand(final String traceId, final boolean dump,
+			final boolean reset) throws IOException {
 		if (dump) {
-			data.collect(writer, writer, reset);
+			data.collect(traceId, writer, writer, reset);
 		} else {
 			if (reset) {
 				data.reset();

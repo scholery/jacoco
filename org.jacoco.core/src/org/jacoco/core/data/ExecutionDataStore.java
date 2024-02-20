@@ -16,8 +16,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jacoco.core.trace.TraceValue;
 
 /**
  * In-memory data store for execution data. The data can be added through its
@@ -29,7 +32,7 @@ import java.util.Set;
  */
 public final class ExecutionDataStore implements IExecutionDataVisitor {
 
-	private final Map<Long, ExecutionData> entries = new HashMap<Long, ExecutionData>();
+	private final Map<Long, Map<String, ExecutionData>> entries = new HashMap<Long, Map<String, ExecutionData>>();
 
 	private final Set<String> names = new HashSet<String>();
 
@@ -43,14 +46,19 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * @throws IllegalStateException
 	 *             if the given {@link ExecutionData} object is not compatible
 	 *             to a corresponding one, that is already contained
-	 * @see ExecutionData#assertCompatibility(long, String, int)
+	 * @see ExecutionData#assertCompatibility(long, String, String, int)
 	 */
 	public void put(final ExecutionData data) throws IllegalStateException {
 		final Long id = Long.valueOf(data.getId());
-		final ExecutionData entry = entries.get(id);
-		if (entry == null) {
-			entries.put(id, data);
+		Map<String, ExecutionData> map = entries.get(id);
+		if (map == null) {
+			map = new HashMap<String, ExecutionData>();
+			entries.put(id, map);
 			names.add(data.getName());
+		}
+		ExecutionData entry = map.get(data.getTraceId());
+		if (entry == null) {
+			map.put(data.getTraceId(), data);
 		} else {
 			entry.merge(data);
 		}
@@ -67,12 +75,16 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * @throws IllegalStateException
 	 *             if the given {@link ExecutionData} object is not compatible
 	 *             to a corresponding one, that is already contained
-	 * @see ExecutionData#assertCompatibility(long, String, int)
+	 * @see ExecutionData#assertCompatibility(long, String, String, int)
 	 */
 	public void subtract(final ExecutionData data)
 			throws IllegalStateException {
 		final Long id = Long.valueOf(data.getId());
-		final ExecutionData entry = entries.get(id);
+		final Map<String, ExecutionData> map = entries.get(id);
+		if (map == null) {
+			return;
+		}
+		final ExecutionData entry = map.get(data.getTraceId());
 		if (entry != null) {
 			entry.merge(data, false);
 		}
@@ -86,7 +98,7 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * @see #subtract(ExecutionData)
 	 */
 	public void subtract(final ExecutionDataStore store) {
-		for (final ExecutionData data : store.getContents()) {
+		for (final ExecutionData data : store.getContents(null)) {
 			subtract(data);
 		}
 	}
@@ -97,10 +109,16 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 *
 	 * @param id
 	 *            class id
+	 * @param traceId
+	 *            trace value
 	 * @return execution data or <code>null</code>
 	 */
-	public ExecutionData get(final long id) {
-		return entries.get(Long.valueOf(id));
+	public ExecutionData get(final long id, final String traceId) {
+		final Map<String, ExecutionData> map = entries.get(id);
+		if (map == null) {
+			return null;
+		}
+		return map.get(traceId);
 	}
 
 	/**
@@ -124,19 +142,22 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 *            class identifier
 	 * @param name
 	 *            VM name of the class
+	 * @param traceId
+	 *            trace value
 	 * @param probecount
 	 *            probe data length
 	 * @return execution data
 	 */
 	public ExecutionData get(final Long id, final String name,
-			final int probecount) {
-		ExecutionData entry = entries.get(id);
+			final String traceId, final int probecount) {
+		ExecutionData entry = this.get(id, traceId);
 		if (entry == null) {
-			entry = new ExecutionData(id.longValue(), name, probecount);
-			entries.put(id, entry);
-			names.add(name);
+			entry = new ExecutionData(id.longValue(), name, traceId,
+					probecount);
+			put(entry);
 		} else {
-			entry.assertCompatibility(id.longValue(), name, probecount);
+			entry.assertCompatibility(id.longValue(), name, traceId,
+					probecount);
 		}
 		return entry;
 	}
@@ -146,8 +167,12 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * execution data objects itself are not removed.
 	 */
 	public void reset() {
-		for (final ExecutionData executionData : this.entries.values()) {
-			executionData.reset();
+		final String traceId = TraceValue.get();
+		for (final Map<String, ExecutionData> map : this.entries.values()) {
+			final ExecutionData executionData = map.get(traceId);
+			if (null != executionData) {
+				executionData.reset();
+			}
 		}
 	}
 
@@ -157,7 +182,26 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * @return current contents
 	 */
 	public Collection<ExecutionData> getContents() {
-		return new ArrayList<ExecutionData>(entries.values());
+		return getContents(TraceValue.get());
+	}
+
+	/**
+	 * Returns a collection that represents current contents of the store.
+	 *
+	 * @param traceId
+	 *            <code>str</code>which the trace related data should be dumped
+	 * @return current contents
+	 */
+	public Collection<ExecutionData> getContents(final String traceId) {
+		List<ExecutionData> values = new ArrayList<>();
+		for (final Map<String, ExecutionData> map : this.entries.values()) {
+			if (null == traceId) {
+				values.addAll(map.values());
+			} else if (map.containsKey(traceId)) {
+				values.add(map.get(traceId));
+			}
+		}
+		return values;
 	}
 
 	/**
@@ -167,7 +211,14 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 *            interface to write content to
 	 */
 	public void accept(final IExecutionDataVisitor visitor) {
-		for (final ExecutionData data : getContents()) {
+		for (final ExecutionData data : getContents(null)) {
+			visitor.visitClassExecution(data);
+		}
+	}
+
+	public void accept(final String traceId,
+			final IExecutionDataVisitor visitor) {
+		for (final ExecutionData data : getContents(traceId)) {
 			visitor.visitClassExecution(data);
 		}
 	}

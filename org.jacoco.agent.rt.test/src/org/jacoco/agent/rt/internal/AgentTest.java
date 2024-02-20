@@ -21,6 +21,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.lang.management.ManagementFactory;
+import java.util.TreeMap;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
@@ -36,6 +37,7 @@ import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.runtime.AgentOptions.OutputMode;
 import org.jacoco.core.runtime.RuntimeData;
 import org.jacoco.core.tools.ExecFileLoader;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -121,7 +123,8 @@ public class AgentTest implements IExceptionLogger, IAgentOutput {
 					public void shutdown() {
 					}
 
-					public void writeExecutionData(boolean reset) {
+					public void writeExecutionData(final String traceId,
+							boolean reset) {
 					}
 				};
 			}
@@ -208,7 +211,8 @@ public class AgentTest implements IExceptionLogger, IAgentOutput {
 						throw expected;
 					}
 
-					public void writeExecutionData(boolean reset) {
+					public void writeExecutionData(final String traceId,
+							boolean reset) {
 					}
 				};
 			}
@@ -288,8 +292,8 @@ public class AgentTest implements IExceptionLogger, IAgentOutput {
 
 		ExecFileLoader loader = new ExecFileLoader();
 		loader.load(new ByteArrayInputStream(data));
-		assertEquals("Foo",
-				loader.getExecutionDataStore().get(0x12345678).getName());
+		assertEquals("Foo", loader.getExecutionDataStore()
+				.get(0x12345678, TraceValue.get()).getName());
 		assertEquals("test",
 				loader.getSessionInfoStore().getInfos().get(0).getId());
 	}
@@ -330,7 +334,7 @@ public class AgentTest implements IExceptionLogger, IAgentOutput {
 		Agent agent = createAgent();
 		agent.startup();
 
-		agent.dump(true);
+		agent.dump(TraceValue.get(), true);
 
 		assertEquals(Boolean.TRUE, writeExecutionDataReset);
 		assertNull(loggedException);
@@ -342,7 +346,7 @@ public class AgentTest implements IExceptionLogger, IAgentOutput {
 		Agent agent = createAgent();
 		agent.startup();
 
-		agent.dump(false);
+		agent.dump(TraceValue.get(), false);
 
 		assertEquals(Boolean.FALSE, writeExecutionDataReset);
 		assertNull(loggedException);
@@ -371,7 +375,7 @@ public class AgentTest implements IExceptionLogger, IAgentOutput {
 	public void shutdown() {
 	}
 
-	public void writeExecutionData(boolean reset) {
+	public void writeExecutionData(final String traceId, boolean reset) {
 		writeExecutionDataReset = Boolean.valueOf(reset);
 	}
 

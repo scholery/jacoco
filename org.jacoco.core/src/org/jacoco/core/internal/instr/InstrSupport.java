@@ -14,7 +14,10 @@ package org.jacoco.core.internal.instr;
 
 import static java.lang.String.format;
 
+import org.jacoco.core.runtime.IExecutionDataAccessorGenerator;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -52,8 +55,8 @@ public final class InstrSupport {
 	 * </p>
 	 * </blockquote>
 	 */
-	public static final int DATAFIELD_ACC = Opcodes.ACC_SYNTHETIC
-			| Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_TRANSIENT;
+	public static final int DATAFIELD_ACC = Opcodes.ACC_PRIVATE
+			| Opcodes.ACC_STATIC | Opcodes.ACC_TRANSIENT;
 
 	/**
 	 * Access modifiers of the field that stores coverage information of a Java
@@ -71,8 +74,8 @@ public final class InstrSupport {
 	 * </p>
 	 * </blockquote>
 	 */
-	public static final int DATAFIELD_INTF_ACC = Opcodes.ACC_SYNTHETIC
-			| Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
+	public static final int DATAFIELD_INTF_ACC = Opcodes.ACC_PUBLIC
+			| Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
 
 	/**
 	 * Data type of the field that stores coverage information for a class (
@@ -95,8 +98,8 @@ public final class InstrSupport {
 	/**
 	 * Access modifiers of the initialization method.
 	 */
-	public static final int INITMETHOD_ACC = Opcodes.ACC_SYNTHETIC
-			| Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC;
+	public static final int INITMETHOD_ACC = Opcodes.ACC_PRIVATE
+			| Opcodes.ACC_STATIC;
 
 	/**
 	 * Name of the interface initialization method.
@@ -157,7 +160,7 @@ public final class InstrSupport {
 	 *
 	 * @see #CLINIT_NAME
 	 */
-	static final int CLINIT_ACC = Opcodes.ACC_SYNTHETIC | Opcodes.ACC_STATIC;
+	static final int CLINIT_ACC = Opcodes.ACC_STATIC;
 
 	/**
 	 * Gets major version number from given bytes of class (unsigned two bytes
@@ -282,4 +285,212 @@ public final class InstrSupport {
 		return classReader;
 	}
 
+	/**
+	 * Name of the field that stores coverage information of a class for trace.
+	 */
+	public static final String DATAFIELD_NAME_MAP = "$jacocoDataMap";
+
+	/**
+	 * Data type of the field that stores coverage information for a class (
+	 * <code>Map&lt;String,boolean[]&gt;</code>).
+	 */
+	public static final String DATAFIELD_DESC_MAP = "Ljava/util/Map;";
+
+	/**
+	 * Data container of the field that stores coverage information for a class
+	 * ( <code>ConcurrentHashMap&lt;String,boolean[]&gt;</code>).
+	 */
+	public static final String DATAFIELD_DESC_INSTANCE_IMPLEMENT = "java/util/concurrent/ConcurrentHashMap";
+	/**
+	 * trace data store container
+	 */
+	public static final String TRACE_VALUE_CLASS = "org/jacoco/core/trace/TraceValue";
+	private static final Object[] FRAME_LOCALS_EMPTY = new Object[0];
+
+	/**
+	 * define data field that store execution data
+	 *
+	 * @param cv
+	 *            class to probe
+	 */
+	public static void createDataFieldMap(final ClassVisitor cv) {
+		cv.visitField(InstrSupport.DATAFIELD_ACC,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP, null, null);
+	}
+
+	/**
+	 * define data field init method
+	 *
+	 * @param cv
+	 *            class to probe
+	 * @param probeCount
+	 *            probe count for this class
+	 * @param classId
+	 *            identifier of the class
+	 * @param className
+	 *            VM class name
+	 * @param accessorGenerator
+	 *            data access code
+	 * @param withFrames
+	 *            if contains frames
+	 *
+	 */
+	public static void createInitMethodMap(final ClassVisitor cv,
+			final int probeCount, final long classId, final String className,
+			IExecutionDataAccessorGenerator accessorGenerator,
+			boolean withFrames) {
+		final MethodVisitor mv = cv.visitMethod(InstrSupport.INITMETHOD_ACC,
+				InstrSupport.INITMETHOD_NAME, InstrSupport.INITMETHOD_DESC,
+				null, null);
+		mv.visitCode();
+
+		// 1. get map
+		mv.visitFieldInsn(Opcodes.GETSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+		mv.visitInsn(Opcodes.DUP);
+
+		// Stack[1]: MAP
+		// Stack[0]: MAP
+
+		// 2. check map
+		Label MAP_NOT_NULL = new Label();
+		mv.visitJumpInsn(Opcodes.IFNONNULL, MAP_NOT_NULL); // 如果不为null，跳转到ifNotNull标签
+
+		// Stack[0]: MAP
+		mv.visitInsn(Opcodes.POP);
+
+		// 3. map null,init
+		mv.visitTypeInsn(Opcodes.NEW,
+				InstrSupport.DATAFIELD_DESC_INSTANCE_IMPLEMENT);
+		mv.visitInsn(Opcodes.DUP);
+
+		// Stack[1]: ConcurrentHashMap
+		// Stack[0]: ConcurrentHashMap
+
+		mv.visitMethodInsn(Opcodes.INVOKESPECIAL,
+				InstrSupport.DATAFIELD_DESC_INSTANCE_IMPLEMENT, "<init>", "()V",
+				false);
+
+		// Stack[0]: ConcurrentHashMap
+
+		// store HashMap instance
+		mv.visitFieldInsn(Opcodes.PUTSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+		mv.visitFieldInsn(Opcodes.GETSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+		// Stack[0]: MAP
+		if (withFrames) {
+			mv.visitFrame(Opcodes.F_NEW, 0, FRAME_LOCALS_EMPTY, 1,
+					new Object[] { "java/util/Map" });
+		}
+
+		// 4. map not null,get array
+		mv.visitLabel(MAP_NOT_NULL);
+
+		// Stack[0]: MAP
+
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, TRACE_VALUE_CLASS, "get",
+				"()Ljava/lang/String;", false);
+
+		// Stack[1]: LString
+		// Stack[0]: MAP
+
+		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Map", "get",
+				"(Ljava/lang/Object;)Ljava/lang/Object;", true);
+		mv.visitInsn(Opcodes.DUP);
+
+		// Stack[1]: [Z
+		// Stack[0]: [Z
+
+		Label ARRAY_NOT_NULL = new Label();
+		// 5. check array null
+		mv.visitJumpInsn(Opcodes.IFNONNULL, ARRAY_NOT_NULL); // 如果不为null，跳转到ifNotNull标签
+		mv.visitInsn(Opcodes.POP);
+
+		// Stack[0]: LString
+
+		final int size = accessorGenerator.generateDataAccessor(classId,
+				className, probeCount, mv);
+
+		// Stack[0]: [Z
+
+		mv.visitFieldInsn(Opcodes.GETSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+		mv.visitInsn(Opcodes.SWAP);
+		mv.visitInsn(Opcodes.DUP_X1);
+
+		// Stack[2]: [Z
+		// Stack[1]: MAP
+		// Stack[0]: [Z
+
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, TRACE_VALUE_CLASS, "get",
+				"()Ljava/lang/String;", false);
+		mv.visitInsn(Opcodes.SWAP);
+
+		// Stack[3]: [Z
+		// Stack[2]: LString
+		// Stack[1]: MAP
+		// Stack[0]: [Z
+
+		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Map", "put",
+				"(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				true);
+		mv.visitInsn(Opcodes.POP);
+
+		// Stack[0]: [Z
+
+		if (withFrames) {
+			mv.visitFrame(Opcodes.F_NEW, 0, FRAME_LOCALS_EMPTY, 1,
+					new Object[] { "java/lang/Object" });
+		}
+
+		// 7. array not null return
+		mv.visitLabel(ARRAY_NOT_NULL);
+
+		// Stack[0]: [Z
+		mv.visitTypeInsn(Opcodes.CHECKCAST, InstrSupport.DATAFIELD_DESC);
+		mv.visitInsn(Opcodes.ARETURN);
+		mv.visitMaxs(Math.max(size, 2), 0); // Maximum local stack size is 2
+		mv.visitEnd();
+	}
+
+	/**
+	 * test
+	 *
+	 * @param mv
+	 *            method to probe
+	 */
+	public static void showTraceId(MethodVisitor mv) {
+		// bba define
+		mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out",
+				"Ljava/io/PrintStream;");
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, TRACE_VALUE_CLASS, "get",
+				"()Ljava" + "/lang/String;", false);
+		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream",
+				"println", "(Ljava/lang/String;)V", false);
+	}
+
+	/**
+	 * test
+	 *
+	 * @param mv
+	 *            method to probe
+	 */
+	public static void showArray(MethodVisitor mv) {
+		// bba define
+		mv.visitInsn(Opcodes.DUP);
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/util/Arrays", "toString",
+				"([Z)" + "Ljava/lang/String;", false);
+		mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out",
+				"Ljava/io/PrintStream;");
+		mv.visitInsn(Opcodes.SWAP);
+		// Stack[0]: [Z
+		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream",
+				"println", "(Ljava/lang/String;)V", false);
+	}
 }
