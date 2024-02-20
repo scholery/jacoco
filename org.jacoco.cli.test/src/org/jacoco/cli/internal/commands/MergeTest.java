@@ -26,6 +26,7 @@ import org.jacoco.cli.internal.CommandTestBase;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataWriter;
 import org.jacoco.core.tools.ExecFileLoader;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -80,7 +81,7 @@ public class MergeTest extends CommandTestBase {
 		final FileOutputStream execout = new FileOutputStream(file);
 		ExecutionDataWriter writer = new ExecutionDataWriter(execout);
 		writer.visitClassExecution(new ExecutionData(name.hashCode(), name,
-				new boolean[] { true }));
+				TraceValue.get(), new boolean[] { true }));
 		execout.close();
 		return file;
 	}

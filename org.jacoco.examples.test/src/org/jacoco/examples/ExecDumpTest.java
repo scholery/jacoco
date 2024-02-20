@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataWriter;
 import org.jacoco.core.data.SessionInfo;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -54,7 +55,7 @@ public class ExecDumpTest {
 		final ExecutionDataWriter writer = new ExecutionDataWriter(out);
 		writer.visitSessionInfo(new SessionInfo("testid", 1, 2));
 		writer.visitClassExecution(new ExecutionData(0x1234, "foo/MyClass",
-				new boolean[] { false, true, true }));
+				TraceValue.get(), new boolean[] { false, true, true }));
 		writer.flush();
 		out.close();
 		return f.getPath();

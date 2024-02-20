@@ -31,6 +31,7 @@ import org.jacoco.core.runtime.IRuntime;
 import org.jacoco.core.runtime.RuntimeData;
 import org.jacoco.core.runtime.SystemPropertiesRuntime;
 import org.jacoco.core.test.TargetLoader;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -264,7 +265,7 @@ public class CyclomaticComplexityTest {
 	private ICounter analyze() throws IOException {
 		final CoverageBuilder builder = new CoverageBuilder();
 		final ExecutionDataStore store = new ExecutionDataStore();
-		data.collect(store, new SessionInfoStore(), false);
+		data.collect(TraceValue.get(), store, new SessionInfoStore(), false);
 		final Analyzer analyzer = new Analyzer(store, builder);
 		analyzer.analyzeClass(bytes, "TestTarget");
 		final Collection<IClassCoverage> classes = builder.getClasses();

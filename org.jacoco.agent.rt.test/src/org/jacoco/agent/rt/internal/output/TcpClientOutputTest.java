@@ -29,6 +29,7 @@ import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.runtime.RemoteControlReader;
 import org.jacoco.core.runtime.RemoteControlWriter;
 import org.jacoco.core.runtime.RuntimeData;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -101,7 +102,7 @@ public class TcpClientOutputTest {
 				.getProbes()[0] = true;
 		data.setSessionId("stubid");
 
-		controller.writeExecutionData(false);
+		controller.writeExecutionData(TraceValue.get(), false);
 
 		final ExecutionDataStore execStore = new ExecutionDataStore();
 		remoteReader.setExecutionDataVisitor(execStore);
@@ -110,7 +111,8 @@ public class TcpClientOutputTest {
 
 		remoteReader.read();
 
-		assertEquals("Foo", execStore.get(0x12345678).getName());
+		assertEquals("Foo",
+				execStore.get(0x12345678, TraceValue.get()).getName());
 
 		final List<SessionInfo> infos = infoStore.getInfos();
 		assertEquals(1, infos.size());

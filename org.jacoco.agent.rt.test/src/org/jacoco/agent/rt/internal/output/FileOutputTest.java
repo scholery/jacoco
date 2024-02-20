@@ -25,6 +25,7 @@ import java.nio.channels.OverlappingFileLockException;
 import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.runtime.RuntimeData;
 import org.jacoco.core.test.validation.JavaVersion;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +61,7 @@ public class FileOutputTest {
 
 		FileOutput controller = new FileOutput();
 		controller.startup(options, new RuntimeData());
-		controller.writeExecutionData(false);
+		controller.writeExecutionData(TraceValue.get(), false);
 		controller.shutdown();
 
 		assertTrue("Execution data file should be created", destFile.exists());

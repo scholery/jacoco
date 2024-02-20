@@ -180,7 +180,7 @@ public class TcpConnectionTest extends ExecutorTestBase {
 
 		assertBlocks(f);
 
-		con.writeExecutionData(false);
+		con.writeExecutionData(TraceValue.get(), false);
 		readAndAssertData();
 
 		con.close();
@@ -192,7 +192,7 @@ public class TcpConnectionTest extends ExecutorTestBase {
 		final TcpConnection con = new TcpConnection(mockConnection.getSocketA(),
 				data);
 		// Must not write any data as we're not initialized:
-		con.writeExecutionData(false);
+		con.writeExecutionData(TraceValue.get(), false);
 
 		assertEquals(0,
 				mockConnection.getSocketB().getInputStream().available());

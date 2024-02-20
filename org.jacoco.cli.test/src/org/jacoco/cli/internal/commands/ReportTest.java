@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import org.jacoco.cli.internal.CommandTestBase;
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataWriter;
+import org.jacoco.core.trace.TraceValue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -69,7 +70,7 @@ public class ReportTest extends CommandTestBase {
 		// Add probably invalid id for this test class:
 		writer.visitClassExecution(
 				new ExecutionData(0x123, getClass().getName().replace('.', '/'),
-						new boolean[] { true }));
+						TraceValue.get(), new boolean[] { true }));
 		execout.close();
 
 		execute("report", exec.getAbsolutePath(), "--classfiles",

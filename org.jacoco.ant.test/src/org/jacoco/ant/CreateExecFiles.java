@@ -18,6 +18,7 @@ import java.io.OutputStream;
 
 import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataWriter;
+import org.jacoco.core.trace.TraceValue;
 
 /**
  * Utility class to create exec files required for some Ant tests.
@@ -40,7 +41,7 @@ public class CreateExecFiles {
 		out = new FileOutputStream(BASE_LOCATION + "nomatch.exec");
 		ExecutionDataWriter writer = new ExecutionDataWriter(out);
 		writer.visitClassExecution(new ExecutionData(0,
-				"org/jacoco/ant/TestTarget", new boolean[0]));
+				"org/jacoco/ant/TestTarget", TraceValue.get(), new boolean[0]));
 		out.close();
 	}
 
