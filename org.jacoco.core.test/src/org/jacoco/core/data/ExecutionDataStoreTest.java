@@ -221,7 +221,7 @@ public class ExecutionDataStoreTest implements IExecutionDataVisitor {
 			throws InstantiationException, IllegalAccessException {
 		final boolean[] data1 = new boolean[] { true, true, false };
 		store.put(new ExecutionData(1000, "Sample", TraceValue.get(), data1));
-		store.reset();
+		store.reset(TraceValue.get());
 		final boolean[] data2 = store.get(1000, TraceValue.get()).getProbes();
 		assertNotNull(data2);
 		assertFalse(data2[0]);

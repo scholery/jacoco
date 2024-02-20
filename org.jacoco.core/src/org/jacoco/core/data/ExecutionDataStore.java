@@ -166,13 +166,11 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * Resets all execution data probes, i.e. marks them as not executed. The
 	 * execution data objects itself are not removed.
 	 */
-	public void reset() {
-		final String traceId = TraceValue.get();
-		for (final Map<String, ExecutionData> map : this.entries.values()) {
-			final ExecutionData executionData = map.get(traceId);
-			if (null != executionData) {
-				executionData.reset();
-			}
+	public void reset(final String traceId) {
+		final Collection<ExecutionData> executionDatas = this
+				.getContents(traceId);
+		for (ExecutionData executionData : executionDatas) {
+			executionData.reset();
 		}
 	}
 
@@ -182,7 +180,7 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * @return current contents
 	 */
 	public Collection<ExecutionData> getContents() {
-		return getContents(TraceValue.get());
+		return getContents(TraceValue.getOrNUll());
 	}
 
 	/**
@@ -193,7 +191,7 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 * @return current contents
 	 */
 	public Collection<ExecutionData> getContents(final String traceId) {
-		List<ExecutionData> values = new ArrayList<>();
+		List<ExecutionData> values = new ArrayList();
 		for (final Map<String, ExecutionData> map : this.entries.values()) {
 			if (null == traceId) {
 				values.addAll(map.values());

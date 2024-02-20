@@ -28,4 +28,8 @@ public class TraceValue {
 		}
 		return str;
 	}
+
+	public static String getOrNUll() {
+		return localVar.get();
+	}
 }

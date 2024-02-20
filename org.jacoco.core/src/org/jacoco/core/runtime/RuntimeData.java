@@ -92,7 +92,7 @@ public class RuntimeData {
 			sessionInfoVisitor.visitSessionInfo(info);
 			store.accept(traceId, executionDataVisitor);
 			if (reset) {
-				reset();
+				reset(traceId);
 			}
 		}
 	}
@@ -100,9 +100,9 @@ public class RuntimeData {
 	/**
 	 * Resets all coverage information.
 	 */
-	public final void reset() {
+	public final void reset(final String traceId) {
 		synchronized (store) {
-			store.reset();
+			store.reset(traceId);
 			startTimeStamp = System.currentTimeMillis();
 		}
 	}
@@ -123,9 +123,7 @@ public class RuntimeData {
 	public ExecutionData getExecutionData(final Long id, final String name,
 			final int probecount) {
 		synchronized (store) {
-			String traceId = TraceValue.get();
-			System.out.println("getExecutionData traceId===> " + traceId);
-			return store.get(id, name, traceId, probecount);
+			return store.get(id, name, TraceValue.get(), probecount);
 		}
 	}
 

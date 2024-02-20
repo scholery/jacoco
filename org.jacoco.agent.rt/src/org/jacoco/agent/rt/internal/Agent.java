@@ -143,7 +143,7 @@ public class Agent implements IAgent {
 	public void shutdown() {
 		try {
 			if (options.getDumpOnExit()) {
-				output.writeExecutionData(TraceValue.get(), false);
+				output.writeExecutionData(null, false);
 			}
 			output.shutdown();
 			if (jmxRegistration != null) {
@@ -202,14 +202,14 @@ public class Agent implements IAgent {
 	}
 
 	public void reset() {
-		data.reset();
+		data.reset(null);
 	}
 
 	public byte[] getExecutionData(final boolean reset) {
 		final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
 			final ExecutionDataWriter writer = new ExecutionDataWriter(buffer);
-			data.collect(TraceValue.get(), writer, writer, reset);
+			data.collect(null, writer, writer, reset);
 		} catch (final IOException e) {
 			// Must not happen with ByteArrayOutputStream
 			throw new AssertionError(e);

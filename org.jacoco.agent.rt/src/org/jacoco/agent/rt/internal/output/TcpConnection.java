@@ -105,7 +105,7 @@ class TcpConnection implements IRemoteCommandVisitor {
 			data.collect(traceId, writer, writer, reset);
 		} else {
 			if (reset) {
-				data.reset();
+				data.reset(traceId);
 			}
 		}
 		writer.sendCmdOk();

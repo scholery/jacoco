@@ -98,7 +98,7 @@
     <module>../org.jacoco.tests</module>
 
 <!--    <module>../org.jacoco.doc</module>-->
-    <module>../jacoco</module>
+<!--    <module>../jacoco</module>-->
   </modules>
 
   <scm>

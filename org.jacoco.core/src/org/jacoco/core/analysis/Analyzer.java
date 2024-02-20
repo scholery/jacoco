@@ -81,7 +81,8 @@ public class Analyzer {
 	 */
 	private ClassVisitor createAnalyzingVisitor(final long classid,
 			final String className) {
-		final ExecutionData data = executionData.get(classid, TraceValue.get());
+		final ExecutionData data = executionData.get(classid,
+				TraceValue.getOrNUll());
 		final boolean[] probes;
 		final boolean noMatch;
 		if (data == null) {

@@ -84,6 +84,7 @@ public class Report extends Command {
 	@Override
 	public int execute(final PrintWriter out, final PrintWriter err)
 			throws IOException {
+		TraceValue.set(traceId);
 		final ExecFileLoader loader = loadExecutionData(out);
 		final IBundleCoverage bundle = analyze(loader.getExecutionDataStore(),
 				out);
