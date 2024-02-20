@@ -13,7 +13,7 @@ if [ $reset = "Y" ]
 then
  r="--reset"
 fi
-echo $r
+#echo $r
 
 jarpath=/Users/u0046326/workspace/bba/github/jacoco/org.jacoco.cli/target/org.jacoco.cli-0.8.12-SNAPSHOT-nodeps.jar
 
