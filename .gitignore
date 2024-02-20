@@ -5,8 +5,3 @@ target/
 org.jacoco.agent/src/jacocoagent.jar
 .idea
 *.iml
-/*/.classpath
-/*/.project
-/*/.setting/*
-/*/bin/*
-/*/.settings/*
