@@ -19,19 +19,17 @@ import org.apache.catalina.connector.RequestFacade;
 public class WebInterceptor {
 
 	public static void beforeRequest(Object request, Object response) {
-		System.out.println(
-				"=============> beforeRequest Intercepting HTTP request:"
-						+ request.getClass().getName());
 		String traceId = null;
-		if (request instanceof HttpServletRequest) {
-			HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-			traceId = httpServletRequest.getHeader("X-Trace-ID");
-		} else if (request instanceof RequestFacade) {
+		// tomcat
+		if (request instanceof RequestFacade) {
 			RequestFacade facade = (RequestFacade) request;
 			traceId = facade.getHeader("X-Trace-ID");
-		}
-		if (null != traceId) {
-			System.out.println("X-Trace-ID ====> " + traceId);
+		} else if (request instanceof HttpServletRequest) {
+			HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+			traceId = httpServletRequest.getHeader("X-Trace-ID");
+		} else {
+			System.out.println("=============> Not support HTTP request:"
+					+ request.getClass().getName());
 		}
 		TraceValue.set(traceId);
 	}
