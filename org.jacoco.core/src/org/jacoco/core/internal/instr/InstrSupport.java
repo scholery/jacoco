@@ -411,8 +411,6 @@ public final class InstrSupport {
 		mv.visitJumpInsn(Opcodes.IFNONNULL, ARRAY_NOT_NULL); // 如果不为null，跳转到ifNotNull标签
 		mv.visitInsn(Opcodes.POP);
 
-		// Stack[0]: LString
-
 		final int size = accessorGenerator.generateDataAccessor(classId,
 				className, probeCount, mv);
 
