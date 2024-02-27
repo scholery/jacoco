@@ -12,7 +12,7 @@ fi
 echo "trace is: $traceIdParam"
 
 r=""
-if [ $reset = "Y" ] 
+if [ "$reset" = "Y" ]
 then
  r="--reset"
 fi
