@@ -45,7 +45,7 @@ public class Dump extends Command {
 	int retrycount = 10;
 
 	@Option(name = "--traceId", usage = "traceId of execution data to dump", metaVar = "<traceId>")
-	String traceId = TraceValue.DEFAULT_TRACE_ID;
+	String traceId = null;
 
 	@Override
 	public String description() {

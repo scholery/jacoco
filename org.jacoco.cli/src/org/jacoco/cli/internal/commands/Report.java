@@ -74,7 +74,7 @@ public class Report extends Command {
 	File html;
 
 	@Option(name = "--traceId", usage = "traceId of execution data to analysis", metaVar = "<traceId>")
-	String traceId = TraceValue.DEFAULT_TRACE_ID;
+	String traceId = null;
 
 	@Override
 	public String description() {

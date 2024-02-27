@@ -115,10 +115,24 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	 */
 	public ExecutionData get(final long id, final String traceId) {
 		final Map<String, ExecutionData> map = entries.get(id);
-		if (map == null) {
+		if (null == map || map.isEmpty()) {
 			return null;
 		}
-		return map.get(traceId);
+		if (null != traceId && traceId.length() > 0) {
+			return map.get(traceId);
+		}
+		// traceId is null
+		Collection<ExecutionData> datas = map.values();
+		ExecutionData data = null;
+		for (ExecutionData one : datas) {
+			if (null == data) {
+				data = new ExecutionData(one.getId(), one.getName(), null,
+						one.getProbes().length);
+			}
+			data.merge(one);
+		}
+
+		return data;
 	}
 
 	/**
@@ -193,7 +207,7 @@ public final class ExecutionDataStore implements IExecutionDataVisitor {
 	public Collection<ExecutionData> getContents(final String traceId) {
 		List<ExecutionData> values = new ArrayList();
 		for (final Map<String, ExecutionData> map : this.entries.values()) {
-			if (null == traceId) {
+			if (null == traceId || traceId.length() == 0) {
 				values.addAll(map.values());
 			} else if (map.containsKey(traceId)) {
 				values.add(map.get(traceId));

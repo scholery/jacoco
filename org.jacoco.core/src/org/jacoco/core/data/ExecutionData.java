@@ -208,7 +208,7 @@ public final class ExecutionData {
 					format("Different class names %s and %s for id %016x.",
 							this.name, name, Long.valueOf(id)));
 		}
-		if (!this.traceId.equals(traceId)) {
+		if (null != this.traceId && !this.traceId.equals(traceId)) {
 			throw new IllegalStateException(
 					format("Different traceId %s and %s for id %016x.",
 							this.traceId, traceId, Long.valueOf(id)));
