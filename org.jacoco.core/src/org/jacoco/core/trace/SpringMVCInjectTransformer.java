@@ -25,7 +25,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class WebClassFileTransformer implements ClassFileTransformer {
+public class SpringMVCInjectTransformer implements ClassFileTransformer {
 
 	public static final List<String> WEB_SERVER_FILTER = Arrays
 			.asList("org/springframework/web/servlet/DispatcherServlet");
@@ -70,13 +70,14 @@ public class WebClassFileTransformer implements ClassFileTransformer {
 							mv.visitVarInsn(Opcodes.ALOAD, 2);
 							// access MyInterceptor.beforeRequest
 							mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-									Type.getInternalName(WebInterceptor.class),
+									Type.getInternalName(
+											HttpRequestInterceptor.class),
 									"beforeRequest",
 									Type.getMethodDescriptor(
-											WebInterceptor.class.getMethod(
-													"beforeRequest",
-													Object.class,
-													Object.class)),
+											HttpRequestInterceptor.class
+													.getMethod("beforeRequest",
+															Object.class,
+															Object.class)),
 									false);
 						} catch (NoSuchMethodException e) {
 							e.printStackTrace();

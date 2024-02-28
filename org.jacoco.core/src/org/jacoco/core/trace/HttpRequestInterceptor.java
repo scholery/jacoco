@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.catalina.connector.RequestFacade;
 
-public class WebInterceptor {
+public class HttpRequestInterceptor {
 
 	public static void beforeRequest(Object request, Object response) {
 		String traceId = null;
