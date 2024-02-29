@@ -18,6 +18,7 @@ import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jacoco.core.internal.instr.InstrSupport;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -47,48 +48,51 @@ public class SpringMVCInjectTransformer implements ClassFileTransformer {
 		ClassReader cr = new ClassReader(classfileBuffer);
 		ClassWriter cw = new ClassWriter(cr,
 				ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		ClassVisitor cv = new ClassVisitor(Opcodes.ASM7, cw) {
-			@Override
-			public MethodVisitor visitMethod(int access, String name,
-					String descriptor, String signature, String[] exceptions) {
-				MethodVisitor mv = super.visitMethod(access, name, descriptor,
-						signature, exceptions);
-
-				if (!WEB_SERVER_FILTER_METHOD.contains(name)) {
-					return mv;
-				}
-				// Inject interceptor logic before doDispatch method in
-				// DispatcherServlet
-				return new MethodVisitor(Opcodes.ASM7, mv) {
-					@Override
-					public void visitCode() {
-						try {
-							// doDispatch load params
-							// varIndex 0 is
-							// org/springframework/web/servlet/DispatcherServlet:this
-							mv.visitVarInsn(Opcodes.ALOAD, 1);
-							mv.visitVarInsn(Opcodes.ALOAD, 2);
-							// access MyInterceptor.beforeRequest
-							mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-									Type.getInternalName(
-											HttpRequestInterceptor.class),
-									"beforeRequest",
-									Type.getMethodDescriptor(
-											HttpRequestInterceptor.class
-													.getMethod("beforeRequest",
-															Object.class,
-															Object.class)),
-									false);
-						} catch (NoSuchMethodException e) {
-							e.printStackTrace();
-						}
-						super.visitCode();
-					}
-				};
-			}
-		};
-
-		cr.accept(cv, 0);
+		cr.accept(new DispatchIject(cw), 0);
 		return cw.toByteArray();
+	}
+
+	public static class DispatchIject extends ClassVisitor {
+		public DispatchIject(ClassVisitor cv) {
+			super(InstrSupport.ASM_API_VERSION, cv);
+		}
+
+		@Override
+		public MethodVisitor visitMethod(int access, String name,
+				String descriptor, String signature, String[] exceptions) {
+			final MethodVisitor mv = super.visitMethod(access, name, descriptor,
+					signature, exceptions);
+
+			if (!WEB_SERVER_FILTER_METHOD.contains(name)) {
+				return mv;
+			}
+			// Inject interceptor logic before doDispatch method in
+			// DispatcherServlet
+			return new MethodVisitor(api, mv) {
+				@Override
+				public void visitCode() {
+					try {
+						// doDispatch load params
+						// varIndex 0 is
+						// org/springframework/web/servlet/DispatcherServlet:this
+						mv.visitVarInsn(Opcodes.ALOAD, 1);
+						mv.visitVarInsn(Opcodes.ALOAD, 2);
+						// access MyInterceptor.beforeRequest
+						mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+								Type.getInternalName(
+										HttpRequestInterceptor.class),
+								"beforeRequest",
+								Type.getMethodDescriptor(
+										HttpRequestInterceptor.class.getMethod(
+												"beforeRequest", Object.class,
+												Object.class)),
+								false);
+					} catch (NoSuchMethodException e) {
+						e.printStackTrace();
+					}
+					super.visitCode();
+				}
+			};
+		}
 	}
 }
