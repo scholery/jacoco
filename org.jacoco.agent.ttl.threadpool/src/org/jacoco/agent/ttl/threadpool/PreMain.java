@@ -10,7 +10,7 @@
  *    Kevin. Zhu - initial API and implementation
  *
  *******************************************************************************/
-package org.jacoco.agent.rt.thread;
+package org.jacoco.agent.ttl.threadpool;
 
 import java.lang.instrument.Instrumentation;
 
@@ -20,9 +20,9 @@ import org.jacoco.core.trace.ExecutorsInjectTransformer;
  * The agent which is referred as the <code>Premain-Class</code>. The agent
  * configuration is provided with the agent parameters in the command line.
  */
-public final class PreMainThread {
+public final class PreMain {
 
-	private PreMainThread() {
+	private PreMain() {
 		// no instances
 	}
 

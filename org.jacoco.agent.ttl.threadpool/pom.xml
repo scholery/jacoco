@@ -20,9 +20,9 @@
     <relativePath>../org.jacoco.build</relativePath>
   </parent>
 
-  <artifactId>org.jacoco.agent.thread</artifactId>
+  <artifactId>org.jacoco.agent.ttl.threadpool</artifactId>
 
-  <name>JaCoCo :: Agent-Thread</name>
+  <name>JaCoCo :: Agent-Threadpool</name>
   <description>JaCoCo Agent-Thread</description>
   <dependencies>
     <dependency>
@@ -47,19 +47,20 @@
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>all</shadedClassifierName>
+              <outputFile>${project.build.directory}/jacocoagent-threadpool.jar</outputFile>
               <minimizeJar>true</minimizeJar>
               <relocations>
                 <relocation>
-                  <pattern>org.jacoco.agent.rt.thread</pattern>
-                  <shadedPattern>${jacoco.runtime.package.name.thread}</shadedPattern>
+                  <pattern>org.jacoco.agent.ttl.threadpool</pattern>
+                  <shadedPattern>${jacoco.runtime.package.name.threadpool}</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.jacoco.core</pattern>
-                  <shadedPattern>${jacoco.runtime.package.name.thread}.core</shadedPattern>
+                  <shadedPattern>${jacoco.runtime.package.name.threadpool}.core</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.objectweb.asm</pattern>
-                  <shadedPattern>${jacoco.runtime.package.name.thread}.asm</shadedPattern>
+                  <shadedPattern>${jacoco.runtime.package.name.threadpool}.asm</shadedPattern>
                 </relocation>
               </relocations>
               <filters>
@@ -85,8 +86,8 @@
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
-                    <Premain-Class>${jacoco.runtime.package.name.thread}.PreMainThread</Premain-Class>
-                    <Boot-Class-Path>org.jacoco.agent.thread-0.8.12-SNAPSHOT-all.jar</Boot-Class-Path>
+                    <Premain-Class>${jacoco.runtime.package.name.threadpool}.PreMain</Premain-Class>
+                    <Boot-Class-Path>jacocoagent-threadpool.jar</Boot-Class-Path>
                     <Automatic-Module-Name>${project.artifactId}</Automatic-Module-Name>
                     <Implementation-Title>${project.description}</Implementation-Title>
                     <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
