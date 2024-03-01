@@ -13,8 +13,12 @@
 
 package org.jacoco.core.trace;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
+import com.alibaba.ttl.TtlCallable;
+import com.alibaba.ttl.TtlRunnable;
 import com.alibaba.ttl.threadpool.TtlExecutors;
 
 public class ThreadPoolFactory {
@@ -22,5 +26,23 @@ public class ThreadPoolFactory {
 	public static ExecutorService getTtlExecutorService(
 			ExecutorService executorService) {
 		return TtlExecutors.getTtlExecutorService(executorService);
+	}
+
+	public static Executor getTtlExecutor(Executor executor) {
+		return TtlExecutors.getTtlExecutor(executor);
+	}
+
+	public static Runnable getTtlRunnable(Runnable runnable) {
+		if (runnable instanceof TtlRunnable) {
+			return runnable;
+		}
+		return TtlRunnable.get(runnable);
+	}
+
+	public static Callable getTtlCallable(Callable callable) {
+		if (callable instanceof TtlCallable) {
+			return callable;
+		}
+		return TtlCallable.get(callable);
 	}
 }
