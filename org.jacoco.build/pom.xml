@@ -89,6 +89,7 @@
     <module>../org.jacoco.core</module>
     <module>../org.jacoco.report</module>
     <module>../org.jacoco.agent.rt</module>
+    <module>../org.jacoco.agent.thread</module>
     <module>../org.jacoco.agent</module>
     <module>../org.jacoco.ant</module>
     <module>../org.jacoco.cli</module>
@@ -699,6 +700,7 @@
                 commitId = project.getProperties().get("build.commitId");
                 pkgName = commitId.substring(commitId.length() - 7, commitId.length());
                 project.getProperties().setProperty("jacoco.runtime.package.name", "org.jacoco.agent.rt.internal_" + pkgName);
+                project.getProperties().setProperty("jacoco.runtime.package.name.thread", "org.jacoco.agent.rt.thread_" + pkgName);
 
                 void loadLicense(String libraryId) {
                     version = project.getProperties().get(libraryId + ".version");

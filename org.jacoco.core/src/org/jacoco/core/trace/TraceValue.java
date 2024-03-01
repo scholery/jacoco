@@ -13,9 +13,11 @@
 
 package org.jacoco.core.trace;
 
+import com.alibaba.ttl.TransmittableThreadLocal;
+
 public class TraceValue {
 	public static final String DEFAULT_TRACE_ID = "default_trace_id";
-	private static ThreadLocal<String> localVar = new ThreadLocal<String>();
+	private static final TransmittableThreadLocal<String> localVar = new TransmittableThreadLocal<String>();
 
 	public static void set(String str) {
 		localVar.set(str);

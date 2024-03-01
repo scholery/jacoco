@@ -51,6 +51,7 @@ public final class PreMain {
 		runtime.startup(agent.getData());
 		inst.addTransformer(new CoverageTransformer(runtime, agentOptions,
 				IExceptionLogger.SYSTEM_ERR));
+		// inject traceId record
 		inst.addTransformer(new SpringMVCInjectTransformer());
 	}
 

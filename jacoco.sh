@@ -32,8 +32,10 @@ fi
 #echo $port
 jarpath=/Users/u0046326/workspace/bba/github/jacoco/org.jacoco.cli/target/org.jacoco.cli-0.8.12-SNAPSHOT-nodeps.jar
 source=/Users/u0046326/workspace/bba/demo/$java/
+commonclass=/Users/u0046326/workspace/bba/demo/common/target/classes
+commonsource=/Users/u0046326/workspace/bba/demo/common/src/main/java
 
 java -jar $jarpath dump --destfile /Users/u0046326/workspace/bba/test_data_jacoco/$java/$file.exec $traceIdParam $r --port $port
 #echo $execFile
 
-java -jar $jarpath report /Users/u0046326/workspace/bba/test_data_jacoco/$java/$file.exec --classfiles $source/target/classes --sourcefiles $source/src/main/java --html /Users/u0046326/workspace/bba/test_data_jacoco/$java/$file $traceIdParam
+java -jar $jarpath report /Users/u0046326/workspace/bba/test_data_jacoco/$java/$file.exec --classfiles $source/target/classes --classfiles $commonclass --sourcefiles $source/src/main/java --sourcefiles $commonsource --html /Users/u0046326/workspace/bba/test_data_jacoco/$java/$file $traceIdParam

@@ -41,20 +41,20 @@ public class SpringMVCInjectTransformer implements ClassFileTransformer {
 		if (!WEB_SERVER_FILTER.contains(className)) {
 			return classfileBuffer;
 		}
-		System.out.println(
-				"====> TraceId inject : Transforming DispatcherServlet ["
-						+ className + "] <====");
 
 		ClassReader cr = new ClassReader(classfileBuffer);
 		ClassWriter cw = new ClassWriter(cr,
 				ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		cr.accept(new DispatchIject(cw), 0);
+		cr.accept(new DispatchIject(className, cw), 0);
 		return cw.toByteArray();
 	}
 
 	public static class DispatchIject extends ClassVisitor {
-		public DispatchIject(ClassVisitor cv) {
+		protected String className;
+
+		public DispatchIject(String className, ClassVisitor cv) {
 			super(InstrSupport.ASM_API_VERSION, cv);
+			this.className = className;
 		}
 
 		@Override
@@ -66,6 +66,8 @@ public class SpringMVCInjectTransformer implements ClassFileTransformer {
 			if (!WEB_SERVER_FILTER_METHOD.contains(name)) {
 				return mv;
 			}
+			System.out.println("====> TraceId inject : Transforming ["
+					+ className + ":" + name + "] <====");
 			// Inject interceptor logic before doDispatch method in
 			// DispatcherServlet
 			return new MethodVisitor(api, mv) {

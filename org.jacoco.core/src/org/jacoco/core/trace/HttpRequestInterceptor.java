@@ -12,25 +12,26 @@
  *******************************************************************************/
 package org.jacoco.core.trace;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.catalina.connector.RequestFacade;
+import java.lang.reflect.Method;
 
 public class HttpRequestInterceptor {
+	public static final String TRACE_ID_HEADER = "X-Trace-ID";
 
 	public static void beforeRequest(Object request, Object response) {
-		String traceId = null;
-		// tomcat
-		if (request instanceof RequestFacade) {
-			RequestFacade facade = (RequestFacade) request;
-			traceId = facade.getHeader("X-Trace-ID");
-		} else if (request instanceof HttpServletRequest) {
-			HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-			traceId = httpServletRequest.getHeader("X-Trace-ID");
-		} else {
-			System.out.println("=============> Not support HTTP request:"
-					+ request.getClass().getName());
-		}
+		String traceId = getTraceId(request);
 		TraceValue.set(traceId);
+	}
+
+	public static String getTraceId(Object request) {
+		String traceId = null;
+		try {
+			Class<?> requestClass = request.getClass();
+			Method method = requestClass.getMethod("getHeader", String.class);
+			traceId = (String) method.invoke(request, TRACE_ID_HEADER);
+		} catch (Exception e) {
+			System.err.println("=============> Not support HTTP request("
+					+ request.getClass().getName() + "):" + e.getMessage());
+		}
+		return traceId;
 	}
 }
