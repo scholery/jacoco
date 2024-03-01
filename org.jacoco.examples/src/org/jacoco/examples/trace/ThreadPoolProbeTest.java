@@ -28,7 +28,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class ThreadExecutorProbeTest {
+public class ThreadPoolProbeTest {
 
 	public void injectExecutors() throws Exception {
 		String className = Executors.class.getName();
@@ -110,6 +110,6 @@ public class ThreadExecutorProbeTest {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new ThreadExecutorProbeTest().injectExecutors();
+		new ThreadPoolProbeTest().injectExecutors();
 	}
 }

@@ -1,6 +1,6 @@
 read -p "请输入trace-id：" trace
 read -p "是否reset(Y/N)：" reset
-read -p "java版本(默认8,可选:11,1,7,21)：" jversion
+read -p "java版本(默认8,可选:11,17,21)：" jversion
 
 #traceId="default_trace_id"
 file="default"

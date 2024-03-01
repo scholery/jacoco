@@ -15,8 +15,6 @@ package org.jacoco.core.trace;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
-import java.util.Arrays;
-import java.util.List;
 
 import org.jacoco.core.internal.instr.InstrSupport;
 import org.objectweb.asm.ClassReader;
@@ -28,10 +26,6 @@ import org.objectweb.asm.Type;
 
 public class ExecutorsInjectTransformer implements ClassFileTransformer {
 	public static final String EXECUTORS = "java/util/concurrent/Executors";
-	public static final List<String> INJECT_METHODS = Arrays.asList(
-			"newFixedThreadPool", "newWorkStealingPool",
-			"newSingleThreadExecutor", "newCachedThreadPool",
-			"unconfigurableExecutorService");
 
 	@Override
 	public byte[] transform(ClassLoader loader, String className,
@@ -64,10 +58,13 @@ public class ExecutorsInjectTransformer implements ClassFileTransformer {
 			final MethodVisitor mv = cv.visitMethod(access, name, descriptor,
 					signature, exceptions);
 
-			if (!INJECT_METHODS.contains(name)) {
+			// public and static method, and return type is ExecutorService,then
+			// inject
+			if ((Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC) != access
+					|| !descriptor.endsWith(
+							")Ljava/util/concurrent/ExecutorService;")) {
 				return mv;
 			}
-
 			System.out.println(
 					"====> Executors inject : Transforming to TtlExecutors ["
 							+ className + ":" + name + "" + descriptor
