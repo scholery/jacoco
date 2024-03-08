@@ -493,30 +493,6 @@ public final class InstrSupport {
 		mv.visitFieldInsn(Opcodes.GETSTATIC, className,
 				InstrSupport.DATAFIELD_NAME_MAP,
 				InstrSupport.DATAFIELD_DESC_MAP);
-		mv.visitInsn(Opcodes.DUP);
-
-		// Stack[1]: MAP
-		// Stack[0]: MAP
-
-		// 2. check map
-		Label alreadyInitialized = new Label();
-		mv.visitJumpInsn(Opcodes.IFNONNULL, alreadyInitialized); // 如果不为null，跳转到ifNotNull标签
-
-		// Stack[0]: MAP
-		mv.visitInsn(Opcodes.POP);
-
-		int size = accessorGenerator.generateDataAccessor(classId, className,
-				probeCount, mv);
-
-		// Stack[0]: [Z
-
-		// Return the class' probe array:
-		mv.visitFrame(Opcodes.F_NEW, 0, FRAME_LOCALS_EMPTY, 1,
-				new Object[] { InstrSupport.DATAFIELD_DESC });
-		mv.visitInsn(Opcodes.ARETURN);
-
-		// 4. map not null,get array
-		mv.visitLabel(alreadyInitialized);
 
 		// Stack[0]: MAP
 
@@ -533,21 +509,22 @@ public final class InstrSupport {
 		// Stack[1]: [Z
 		// Stack[0]: [Z
 
-		Label ARRAY_NOT_NULL = new Label();
 		// 5. check array null
+		Label ARRAY_NOT_NULL = new Label();
 		mv.visitJumpInsn(Opcodes.IFNONNULL, ARRAY_NOT_NULL); // 如果不为null，跳转到ifNotNull标签
 		mv.visitInsn(Opcodes.POP);
 
-		size = accessorGenerator.generateDataAccessor(classId, className,
-				probeCount, mv);
+		final int size = accessorGenerator.generateDataAccessor(classId,
+				className, probeCount, mv);
+		mv.visitInsn(Opcodes.DUP);
 
+		// Stack[0]: [Z
 		// Stack[0]: [Z
 
 		mv.visitFieldInsn(Opcodes.GETSTATIC, className,
 				InstrSupport.DATAFIELD_NAME_MAP,
 				InstrSupport.DATAFIELD_DESC_MAP);
 		mv.visitInsn(Opcodes.SWAP);
-		mv.visitInsn(Opcodes.DUP_X1);
 
 		// Stack[2]: [Z
 		// Stack[1]: MAP
@@ -577,6 +554,7 @@ public final class InstrSupport {
 		mv.visitLabel(ARRAY_NOT_NULL);
 
 		// Stack[0]: [Z
+
 		mv.visitTypeInsn(Opcodes.CHECKCAST, InstrSupport.DATAFIELD_DESC);
 		mv.visitInsn(Opcodes.ARETURN);
 		mv.visitMaxs(Math.max(size, 2), 0); // Maximum local stack size is 2
@@ -622,6 +600,8 @@ public final class InstrSupport {
 				InstrSupport.DATAFIELD_DESC_MAP);
 
 		mv.visitInsn(Opcodes.RETURN);
+
+		mv.visitMaxs(2, 0);
 		mv.visitEnd();
 	}
 
