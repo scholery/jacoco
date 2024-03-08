@@ -45,20 +45,20 @@ public class SpringMVCInjectTransformer implements ClassFileTransformer {
 		ClassReader cr = new ClassReader(classfileBuffer);
 		ClassWriter cw = new ClassWriter(cr,
 				ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		cr.accept(new DispatchIject(className, cw), 0);
+		cr.accept(new DispatchInject(className, cw), 0);
 		return cw.toByteArray();
 	}
 
-	public static class DispatchIject extends ClassVisitor {
+	public static class DispatchInject extends ClassVisitor {
 		protected String className;
 
-		public DispatchIject(String className, ClassVisitor cv) {
+		public DispatchInject(String className, ClassVisitor cv) {
 			super(InstrSupport.ASM_API_VERSION, cv);
 			this.className = className;
 		}
 
 		@Override
-		public MethodVisitor visitMethod(int access, String name,
+		public MethodVisitor visitMethod(int access, final String name,
 				String descriptor, String signature, String[] exceptions) {
 			final MethodVisitor mv = super.visitMethod(access, name, descriptor,
 					signature, exceptions);
@@ -66,33 +66,28 @@ public class SpringMVCInjectTransformer implements ClassFileTransformer {
 			if (!WEB_SERVER_FILTER_METHOD.contains(name)) {
 				return mv;
 			}
-			System.out.println("====> TraceId inject : Transforming ["
-					+ className + ":" + name + "] <====");
 			// Inject interceptor logic before doDispatch method in
 			// DispatcherServlet
 			return new MethodVisitor(api, mv) {
 				@Override
 				public void visitCode() {
-					try {
-						// doDispatch load params
-						// varIndex 0 is
-						// org/springframework/web/servlet/DispatcherServlet:this
-						mv.visitVarInsn(Opcodes.ALOAD, 1);
-						mv.visitVarInsn(Opcodes.ALOAD, 2);
-						// access MyInterceptor.beforeRequest
-						mv.visitMethodInsn(Opcodes.INVOKESTATIC,
-								Type.getInternalName(
-										HttpRequestInterceptor.class),
-								"beforeRequest",
-								Type.getMethodDescriptor(
-										HttpRequestInterceptor.class.getMethod(
-												"beforeRequest", Object.class,
-												Object.class)),
-								false);
-					} catch (NoSuchMethodException e) {
-						e.printStackTrace();
-					}
 					super.visitCode();
+					if (!WEB_SERVER_FILTER_METHOD.contains(name)) {
+						return;
+					}
+					System.out.println("====> TraceId inject : Transforming ["
+							+ className + ":" + name + "] <====");
+					// doDispatch load params
+					// varIndex 0 is
+					// org/springframework/web/servlet/DispatcherServlet:this
+					mv.visitVarInsn(Opcodes.ALOAD, 1);
+					mv.visitVarInsn(Opcodes.ALOAD, 2);
+					// access MyInterceptor.beforeRequest
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+							Type.getInternalName(HttpRequestInterceptor.class),
+							"beforeRequest",
+							"(Ljava/lang/Object;Ljava/lang/Object;)V", false);
+
 				}
 			};
 		}
