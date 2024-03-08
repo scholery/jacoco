@@ -55,22 +55,26 @@ class InterfaceFieldProbeArrayStrategy implements IProbeArrayStrategy {
 	public int storeInstance(final MethodVisitor mv, final boolean clinit,
 			final int variable) {
 		if (clinit) {
-			final int maxStack = accessorGenerator.generateDataAccessor(classId,
-					className, probeCount, mv);
-
-			// Stack[0]: [Z
-
-			mv.visitInsn(Opcodes.DUP);
-
-			// Stack[1]: [Z
-			// Stack[0]: [Z
-
-			mv.visitFieldInsn(Opcodes.PUTSTATIC, className,
-					InstrSupport.DATAFIELD_NAME, InstrSupport.DATAFIELD_DESC);
-
-			// Stack[0]: [Z
-
-			mv.visitVarInsn(Opcodes.ASTORE, variable);
+			// final int maxStack =
+			// accessorGenerator.generateDataAccessor(classId,
+			// className, probeCount, mv);
+			//
+			// // Stack[0]: [Z
+			//
+			// mv.visitInsn(Opcodes.DUP);
+			//
+			// // Stack[1]: [Z
+			// // Stack[0]: [Z
+			//
+			// mv.visitFieldInsn(Opcodes.PUTSTATIC, className,
+			// InstrSupport.DATAFIELD_NAME, InstrSupport.DATAFIELD_DESC);
+			//
+			// // Stack[0]: [Z
+			//
+			// mv.visitVarInsn(Opcodes.ASTORE, variable);
+			final int maxStack = InstrSupport.interfaceCinitMethodvisit(mv,
+					probeCount, classId, className, variable,
+					accessorGenerator);
 
 			seenClinit = true;
 			return Math.max(maxStack, 2);
@@ -84,10 +88,17 @@ class InterfaceFieldProbeArrayStrategy implements IProbeArrayStrategy {
 	}
 
 	public void addMembers(final ClassVisitor cv, final int probeCount) {
-		createDataField(cv);
-		createInitMethod(cv, probeCount);
+		// createDataField(cv);
+		// createInitMethod(cv, probeCount);
+		// if (!seenClinit) {
+		// createClinitMethod(cv, probeCount);
+		// }
+		InstrSupport.createInterfaceDataFieldMap(cv);
+		InstrSupport.createInterfaceDataInitMethodMap(cv, probeCount, classId,
+				className, accessorGenerator);
 		if (!seenClinit) {
-			createClinitMethod(cv, probeCount);
+			InstrSupport.createClinitMethod(cv, probeCount, classId, className,
+					accessorGenerator);
 		}
 	}
 

@@ -14,6 +14,9 @@ package org.jacoco.core.internal.instr;
 
 import static java.lang.String.format;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jacoco.core.runtime.IExecutionDataAccessorGenerator;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -297,11 +300,6 @@ public final class InstrSupport {
 	public static final String DATAFIELD_DESC_MAP = "Ljava/util/Map;";
 
 	/**
-	 * Data container of the field that stores coverage information for a class
-	 * ( <code>ConcurrentHashMap&lt;String,boolean[]&gt;</code>).
-	 */
-	public static final String DATAFIELD_DESC_INSTANCE_IMPLEMENT = "java/util/concurrent/ConcurrentHashMap";
-	/**
 	 * trace data store container
 	 */
 	public static final String TRACE_VALUE_CLASS = "org/jacoco/core/trace/TraceValue";
@@ -313,7 +311,7 @@ public final class InstrSupport {
 	 * @param cv
 	 *            class to probe
 	 */
-	public static void createDataFieldMap(final ClassVisitor cv) {
+	public static void createClassDataFieldMap(final ClassVisitor cv) {
 		cv.visitField(InstrSupport.DATAFIELD_ACC,
 				InstrSupport.DATAFIELD_NAME_MAP,
 				InstrSupport.DATAFIELD_DESC_MAP, null, null);
@@ -336,7 +334,7 @@ public final class InstrSupport {
 	 *            if contains frames
 	 *
 	 */
-	public static void createInitMethodMap(final ClassVisitor cv,
+	public static void createClassDataInitMethodMap(final ClassVisitor cv,
 			final int probeCount, final long classId, final String className,
 			IExecutionDataAccessorGenerator accessorGenerator,
 			boolean withFrames) {
@@ -362,16 +360,14 @@ public final class InstrSupport {
 		mv.visitInsn(Opcodes.POP);
 
 		// 3. map null,init
-		mv.visitTypeInsn(Opcodes.NEW,
-				InstrSupport.DATAFIELD_DESC_INSTANCE_IMPLEMENT);
+		mv.visitTypeInsn(Opcodes.NEW, getClassPath(ConcurrentHashMap.class));
 		mv.visitInsn(Opcodes.DUP);
 
 		// Stack[1]: ConcurrentHashMap
 		// Stack[0]: ConcurrentHashMap
 
 		mv.visitMethodInsn(Opcodes.INVOKESPECIAL,
-				InstrSupport.DATAFIELD_DESC_INSTANCE_IMPLEMENT, "<init>", "()V",
-				false);
+				getClassPath(ConcurrentHashMap.class), "<init>", "()V", false);
 
 		// Stack[0]: ConcurrentHashMap
 
@@ -399,8 +395,8 @@ public final class InstrSupport {
 		// Stack[1]: LString
 		// Stack[0]: MAP
 
-		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Map", "get",
-				"(Ljava/lang/Object;)Ljava/lang/Object;", true);
+		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, getClassPath(Map.class),
+				"get", "(Ljava/lang/Object;)Ljava/lang/Object;", true);
 		mv.visitInsn(Opcodes.DUP);
 
 		// Stack[1]: [Z
@@ -435,7 +431,8 @@ public final class InstrSupport {
 		// Stack[1]: MAP
 		// Stack[0]: [Z
 
-		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Map", "put",
+		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, getClassPath(Map.class),
+				"put",
 				"(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
 				true);
 		mv.visitInsn(Opcodes.POP);
@@ -455,6 +452,262 @@ public final class InstrSupport {
 		mv.visitInsn(Opcodes.ARETURN);
 		mv.visitMaxs(Math.max(size, 2), 0); // Maximum local stack size is 2
 		mv.visitEnd();
+	}
+
+	/**
+	 * define data field that store execution data
+	 *
+	 * @param cv
+	 *            class to probe
+	 */
+	public static void createInterfaceDataFieldMap(final ClassVisitor cv) {
+		cv.visitField(InstrSupport.DATAFIELD_INTF_ACC,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP, null, null);
+	}
+
+	/**
+	 * define data field init method
+	 *
+	 * @param cv
+	 *            class to probe
+	 * @param probeCount
+	 *            probe count for this class
+	 * @param classId
+	 *            identifier of the class
+	 * @param className
+	 *            VM class name
+	 * @param accessorGenerator
+	 *            data access code
+	 *
+	 */
+	public static void createInterfaceDataInitMethodMap(final ClassVisitor cv,
+			final int probeCount, final long classId, final String className,
+			IExecutionDataAccessorGenerator accessorGenerator) {
+		final MethodVisitor mv = cv.visitMethod(InstrSupport.INITMETHOD_ACC,
+				InstrSupport.INITMETHOD_NAME, InstrSupport.INITMETHOD_DESC,
+				null, null);
+		mv.visitCode();
+
+		// 1. get map
+		mv.visitFieldInsn(Opcodes.GETSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+		mv.visitInsn(Opcodes.DUP);
+
+		// Stack[1]: MAP
+		// Stack[0]: MAP
+
+		// 2. check map
+		Label alreadyInitialized = new Label();
+		mv.visitJumpInsn(Opcodes.IFNONNULL, alreadyInitialized); // 如果不为null，跳转到ifNotNull标签
+
+		// Stack[0]: MAP
+		mv.visitInsn(Opcodes.POP);
+
+		int size = accessorGenerator.generateDataAccessor(classId, className,
+				probeCount, mv);
+
+		// Stack[0]: [Z
+
+		// Return the class' probe array:
+		mv.visitFrame(Opcodes.F_NEW, 0, FRAME_LOCALS_EMPTY, 1,
+				new Object[] { InstrSupport.DATAFIELD_DESC });
+		mv.visitInsn(Opcodes.ARETURN);
+
+		// 4. map not null,get array
+		mv.visitLabel(alreadyInitialized);
+
+		// Stack[0]: MAP
+
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, TRACE_VALUE_CLASS, "get",
+				"()Ljava/lang/String;", false);
+
+		// Stack[1]: LString
+		// Stack[0]: MAP
+
+		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, getClassPath(Map.class),
+				"get", "(Ljava/lang/Object;)Ljava/lang/Object;", true);
+		mv.visitInsn(Opcodes.DUP);
+
+		// Stack[1]: [Z
+		// Stack[0]: [Z
+
+		Label ARRAY_NOT_NULL = new Label();
+		// 5. check array null
+		mv.visitJumpInsn(Opcodes.IFNONNULL, ARRAY_NOT_NULL); // 如果不为null，跳转到ifNotNull标签
+		mv.visitInsn(Opcodes.POP);
+
+		size = accessorGenerator.generateDataAccessor(classId, className,
+				probeCount, mv);
+
+		// Stack[0]: [Z
+
+		mv.visitFieldInsn(Opcodes.GETSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+		mv.visitInsn(Opcodes.SWAP);
+		mv.visitInsn(Opcodes.DUP_X1);
+
+		// Stack[2]: [Z
+		// Stack[1]: MAP
+		// Stack[0]: [Z
+
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, TRACE_VALUE_CLASS, "get",
+				"()Ljava/lang/String;", false);
+		mv.visitInsn(Opcodes.SWAP);
+
+		// Stack[3]: [Z
+		// Stack[2]: LString
+		// Stack[1]: MAP
+		// Stack[0]: [Z
+
+		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, getClassPath(Map.class),
+				"put",
+				"(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				true);
+		mv.visitInsn(Opcodes.POP);
+
+		// Stack[0]: [Z
+
+		mv.visitFrame(Opcodes.F_NEW, 0, FRAME_LOCALS_EMPTY, 1,
+				new Object[] { "java/lang/Object" });
+
+		// 7. array not null return
+		mv.visitLabel(ARRAY_NOT_NULL);
+
+		// Stack[0]: [Z
+		mv.visitTypeInsn(Opcodes.CHECKCAST, InstrSupport.DATAFIELD_DESC);
+		mv.visitInsn(Opcodes.ARETURN);
+		mv.visitMaxs(Math.max(size, 2), 0); // Maximum local stack size is 2
+		mv.visitEnd();
+	}
+
+	/**
+	 *
+	 * create cinit method
+	 *
+	 * @param cv
+	 *            class to probe
+	 * @param probeCount
+	 *            probe count for this class
+	 * @param classId
+	 *            identifier of the class
+	 * @param className
+	 *            VM class name
+	 * @param accessorGenerator
+	 *            data access code
+	 */
+	public static void createClinitMethod(final ClassVisitor cv,
+			final int probeCount, final long classId, final String className,
+			IExecutionDataAccessorGenerator accessorGenerator) {
+		final MethodVisitor mv = cv.visitMethod(InstrSupport.CLINIT_ACC,
+				InstrSupport.CLINIT_NAME, InstrSupport.CLINIT_DESC, null, null);
+		mv.visitCode();
+
+		mv.visitTypeInsn(Opcodes.NEW, getClassPath(ConcurrentHashMap.class));
+		mv.visitInsn(Opcodes.DUP);
+
+		// Stack[1]: ConcurrentHashMap
+		// Stack[0]: ConcurrentHashMap
+
+		mv.visitMethodInsn(Opcodes.INVOKESPECIAL,
+				getClassPath(ConcurrentHashMap.class), "<init>", "()V", false);
+
+		// Stack[0]: ConcurrentHashMap
+
+		// store HashMap instance
+		mv.visitFieldInsn(Opcodes.PUTSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+
+		mv.visitInsn(Opcodes.RETURN);
+		mv.visitEnd();
+	}
+
+	/**
+	 *
+	 * create cinit method
+	 *
+	 * @param mv
+	 *            cinit method to probe
+	 * @param probeCount
+	 *            probe count for this class
+	 * @param classId
+	 *            identifier of the class
+	 * @param className
+	 *            VM class name
+	 * @param variable
+	 *            variable to store
+	 * @param accessorGenerator
+	 *            data access code
+	 *
+	 * @return int max size
+	 */
+	public static int interfaceCinitMethodvisit(final MethodVisitor mv,
+			final int probeCount, final long classId, final String className,
+			final int variable,
+			IExecutionDataAccessorGenerator accessorGenerator) {
+		mv.visitTypeInsn(Opcodes.NEW, getClassPath(ConcurrentHashMap.class));
+		mv.visitInsn(Opcodes.DUP);
+		mv.visitInsn(Opcodes.DUP);
+
+		// Stack[1]: ConcurrentHashMap
+		// Stack[0]: ConcurrentHashMap
+		// Stack[0]: ConcurrentHashMap
+
+		mv.visitMethodInsn(Opcodes.INVOKESPECIAL,
+				getClassPath(ConcurrentHashMap.class), "<init>", "()V", false);
+
+		// Stack[0]: ConcurrentHashMap
+		// Stack[0]: ConcurrentHashMap
+
+		// store HashMap instance
+		mv.visitFieldInsn(Opcodes.PUTSTATIC, className,
+				InstrSupport.DATAFIELD_NAME_MAP,
+				InstrSupport.DATAFIELD_DESC_MAP);
+
+		// Stack[0]: ConcurrentHashMap
+
+		final int size = accessorGenerator.generateDataAccessor(classId,
+				className, probeCount, mv);
+		mv.visitInsn(Opcodes.DUP_X1);
+
+		// Stack[0]: [Z
+		// Stack[0]: ConcurrentHashMap
+		// Stack[0]: [Z
+
+		mv.visitMethodInsn(Opcodes.INVOKESTATIC, TRACE_VALUE_CLASS, "get",
+				"()Ljava/lang/String;", false);
+		mv.visitInsn(Opcodes.SWAP);
+
+		// Stack[0]: [Z
+		// Stack[1]: LString
+		// Stack[0]: ConcurrentHashMap
+		// Stack[0]: [Z
+
+		mv.visitMethodInsn(Opcodes.INVOKEINTERFACE,
+				getClassPath(ConcurrentHashMap.class), "put",
+				"(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+				true);
+
+		// Stack[0]: [Z
+
+		mv.visitVarInsn(Opcodes.ASTORE, variable);
+		return size;
+	}
+
+	/**
+	 *
+	 * get class path: java/lang/System
+	 *
+	 * @param cls
+	 *            class
+	 * @return clas type str
+	 */
+	public static String getClassPath(Class cls) {
+
+		return cls.getName().replace(".", "/");
 	}
 
 	/**

@@ -12,8 +12,14 @@
  *******************************************************************************/
 package org.jacoco.examples.trace;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jacoco.core.internal.instr.InstrSupport;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 public class TraceProbeInsert extends ClassVisitor {
 	public static final String className = TraceTestMap.class.getName();
@@ -66,11 +72,11 @@ public class TraceProbeInsert extends ClassVisitor {
 
 		// 3. map null,init
 		initBlock.visitTypeInsn(Opcodes.NEW,
-				InstrSupport.DATAFIELD_DESC_INSTANCE_IMPLEMENT);
+				InstrSupport.getClassPath(ConcurrentHashMap.class));
 		initBlock.visitInsn(Opcodes.DUP);
 		initBlock.visitMethodInsn(Opcodes.INVOKESPECIAL,
-				InstrSupport.DATAFIELD_DESC_INSTANCE_IMPLEMENT, "<init>", "()V",
-				false);
+				InstrSupport.getClassPath(ConcurrentHashMap.class), "<init>",
+				"()V", false);
 		// 存放HashMap实例到静态字段MY_MAP
 		initBlock.visitFieldInsn(Opcodes.PUTSTATIC, className,
 				InstrSupport.DATAFIELD_NAME, InstrSupport.DATAFIELD_DESC_MAP);
@@ -119,7 +125,7 @@ public class TraceProbeInsert extends ClassVisitor {
 		initBlock.visitVarInsn(Opcodes.ALOAD, 1);
 		initBlock.visitVarInsn(Opcodes.ALOAD, 3);
 		initBlock.visitMethodInsn(Opcodes.INVOKEINTERFACE,
-				InstrSupport.DATAFIELD_DESC_INSTANCE_IMPLEMENT, "put",
+				InstrSupport.getClassPath(ConcurrentHashMap.class), "put",
 				"(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
 				true);
 
