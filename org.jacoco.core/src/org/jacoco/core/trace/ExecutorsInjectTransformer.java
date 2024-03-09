@@ -30,7 +30,7 @@ public class ExecutorsInjectTransformer implements ClassFileTransformer {
 	public static final String EXECUTORS = "java/util/concurrent/Executors";
 	public static final List<String> THREAD_POOLS = Arrays.asList(
 			"java/util/concurrent/ThreadPoolExecutor",
-			"java" + "/util/concurrent/ForkJoinPool");
+			"java/util/concurrent/ForkJoinPool");
 
 	@Override
 	public byte[] transform(ClassLoader loader, String className,

@@ -66,19 +66,15 @@ public class SpringMVCInjectTransformer implements ClassFileTransformer {
 			if (!WEB_SERVER_FILTER_METHOD.contains(name)) {
 				return mv;
 			}
+			System.out.println("====> TraceId inject : Transforming ["
+					+ className + ":" + name + "] <====");
 			// Inject interceptor logic before doDispatch method in
 			// DispatcherServlet
 			return new MethodVisitor(api, mv) {
 				@Override
 				public void visitCode() {
 					super.visitCode();
-					if (!WEB_SERVER_FILTER_METHOD.contains(name)) {
-						return;
-					}
-					System.out.println("====> TraceId inject : Transforming ["
-							+ className + ":" + name + "] <====");
-					// doDispatch load params
-					// varIndex 0 is
+					// doDispatch load params,varIndex 0 is
 					// org/springframework/web/servlet/DispatcherServlet:this
 					mv.visitVarInsn(Opcodes.ALOAD, 1);
 					mv.visitVarInsn(Opcodes.ALOAD, 2);
