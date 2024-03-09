@@ -19,7 +19,6 @@ import org.jacoco.core.runtime.IRuntime;
 import org.jacoco.core.runtime.InjectedClassRuntime;
 import org.jacoco.core.runtime.ModifiedSystemClassRuntime;
 import org.jacoco.core.trace.HttpRequestTransformer;
-import org.jacoco.core.trace.SpringMVCInjectTransformer;
 
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.matcher.ElementMatchers;
@@ -56,21 +55,12 @@ public final class PreMain {
 		inst.addTransformer(new CoverageTransformer(runtime, agentOptions,
 				IExceptionLogger.SYSTEM_ERR));
 		// inject traceId record
-		inst.addTransformer(new SpringMVCInjectTransformer());
-
-		// bytebuddy
-		// new
-		// AgentBuilder.Default().type(ElementMatchers.isAnnotatedWith(named(
-		// "org.springframework.web.bind.annotation.RestController")))
-		// .transform(new HttpRequestTransformer())
-		// // .with(AgentBuilder.Listener.StreamWriting.toSystemOut())
-		// .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
-		// .installOn(inst);
+		// inst.addTransformer(new SpringMVCInjectTransformer());
+		// inject traceId record with byte-buddy
 		new AgentBuilder.Default()
 				.type(ElementMatchers.named(
 						"org.springframework.web.servlet.DispatcherServlet"))
 				.transform(new HttpRequestTransformer())
-				// .with(AgentBuilder.Listener.StreamWriting.toSystemOut())
 				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
 				.installOn(inst);
 	}

@@ -30,49 +30,12 @@ public class HttpRequestTransformer implements AgentBuilder.Transformer {
 			TypeDescription typeDescription, ClassLoader classLoader,
 			JavaModule javaModule, ProtectionDomain protectionDomain) {
 
-		final AsmVisitorWrapper delMappingVisitor = Advice
-				.to(EnterAdvice.class, ExitAdviceMethods.class)
-				.on(ElementMatchers.isAnnotatedWith(ElementMatchers.named(
-						"org.springframework.web.bind.annotation.DeleteMapping")));
-
-		final AsmVisitorWrapper getMappingVisitor = Advice
-				.to(EnterAdvice.class, ExitAdviceMethods.class)
-				.on(ElementMatchers.isAnnotatedWith(ElementMatchers.named(
-						"org.springframework.web.bind.annotation.GetMapping")));
-
-		final AsmVisitorWrapper mapping = Advice
-				.to(EnterAdvice.class, ExitAdviceMethods.class)
-				.on(ElementMatchers.isAnnotatedWith(ElementMatchers.named(
-						"org.springframework.web.bind.annotation.Mapping")));
-
-		final AsmVisitorWrapper patchMappingVisitor = Advice
-				.to(EnterAdvice.class, ExitAdviceMethods.class)
-				.on(ElementMatchers.isAnnotatedWith(ElementMatchers.named(
-						"org.springframework.web.bind.annotation.PatchMapping")));
-
-		final AsmVisitorWrapper postMappingVisitor = Advice
-				.to(EnterAdvice.class, ExitAdviceMethods.class)
-				.on(ElementMatchers.isAnnotatedWith(ElementMatchers.named(
-						"org.springframework.web.bind.annotation.PostMapping")));
-
-		final AsmVisitorWrapper putMappingVisitor = Advice
-				.to(EnterAdvice.class, ExitAdviceMethods.class)
-				.on(ElementMatchers.isAnnotatedWith(ElementMatchers.named(
-						"org.springframework.web.bind.annotation.PutMapping")));
-
-		final AsmVisitorWrapper reqMappingVisitor = Advice
-				.to(EnterAdvice.class, ExitAdviceMethods.class)
-				.on(ElementMatchers.isAnnotatedWith(ElementMatchers.named(
-						"org.springframework.web.bind.annotation.RequestMapping")));
-
+		System.out.println("====> TraceId inject : Transforming ["
+				+ typeDescription.getName() + ":doDispatch] <====");
 		final AsmVisitorWrapper doDispatch = Advice
 				.to(EnterAdvice.class, ExitAdviceMethods.class)
 				.on(ElementMatchers.named("doDispatch"));
 		return builder.visit(doDispatch);
-		// return builder.visit(delMappingVisitor).visit(getMappingVisitor)
-		// .visit(mapping).visit(patchMappingVisitor)
-		// .visit(postMappingVisitor).visit(putMappingVisitor)
-		// .visit(reqMappingVisitor);
 	}
 
 	public static class EnterAdvice {
@@ -94,11 +57,6 @@ public class HttpRequestTransformer implements AgentBuilder.Transformer {
 		@Advice.OnMethodExit(onThrowable = Throwable.class)
 		static void exit(@Advice.Origin final Executable executable,
 				@Advice.AllArguments Object[] args) {
-			// Get the HttpServletRequest,HttpServletResponse from the method
-			// arguments
-			// if (args.length >= 2) {
-			// HttpRequestInterceptor.beforeRequest(args[0], args[1]);
-			// }
 		}
 	}
 }
