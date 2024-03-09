@@ -18,7 +18,11 @@ import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.runtime.IRuntime;
 import org.jacoco.core.runtime.InjectedClassRuntime;
 import org.jacoco.core.runtime.ModifiedSystemClassRuntime;
+import org.jacoco.core.trace.HttpRequestTransformer;
 import org.jacoco.core.trace.SpringMVCInjectTransformer;
+
+import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.matcher.ElementMatchers;
 
 /**
  * The agent which is referred as the <code>Premain-Class</code>. The agent
@@ -53,6 +57,22 @@ public final class PreMain {
 				IExceptionLogger.SYSTEM_ERR));
 		// inject traceId record
 		inst.addTransformer(new SpringMVCInjectTransformer());
+
+		// bytebuddy
+		// new
+		// AgentBuilder.Default().type(ElementMatchers.isAnnotatedWith(named(
+		// "org.springframework.web.bind.annotation.RestController")))
+		// .transform(new HttpRequestTransformer())
+		// // .with(AgentBuilder.Listener.StreamWriting.toSystemOut())
+		// .with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+		// .installOn(inst);
+		new AgentBuilder.Default()
+				.type(ElementMatchers.named(
+						"org.springframework.web.servlet.DispatcherServlet"))
+				.transform(new HttpRequestTransformer())
+				// .with(AgentBuilder.Listener.StreamWriting.toSystemOut())
+				.with(AgentBuilder.TypeStrategy.Default.REDEFINE)
+				.installOn(inst);
 	}
 
 	private static IRuntime createRuntime(final Instrumentation inst)
