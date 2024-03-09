@@ -18,6 +18,7 @@ import java.io.IOException;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
+import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.tools.ExecFileLoader;
 import org.jacoco.core.trace.TraceValue;
 import org.jacoco.report.DirectorySourceFileLocator;
@@ -53,14 +54,14 @@ public class ReportGenerator {
 	public ReportGenerator() {
 		this.title = "default";
 		this.executionDataFile = new File(
-				"/Users/u0046326/workspace/bba/test_data_jacoco/default.exec");
+				"/Users/u0046326/workspace/bba/test_data_jacoco/java8/c.exec");
 		this.classesDirectory = new File(
-				"/Users/u0046326/workspace/bba/demo/target/classes");
+				"/Users/u0046326/workspace/bba/demo/java8/target/classes");
 		this.sourceDirectory = new File(
-				"/Users/u0046326/workspace/bba/demo/src/main/java");
+				"/Users/u0046326/workspace/bba/demo/java8/src/main/java");
 		this.reportDirectory = new File(
 				"/Users/u0046326/workspace/bba/test_data_jacoco/default");
-		traceId = "";
+		traceId = "c";
 		TraceValue.set(traceId);
 	}
 
@@ -126,6 +127,11 @@ public class ReportGenerator {
 
 		analyzer.analyzeAll(classesDirectory);
 
+		for (final IClassCoverage c : coverageBuilder.getNoMatchClasses()) {
+			System.out.printf(
+					"[WARN] Execution data for class %s does not match.%n",
+					c.getName());
+		}
 		return coverageBuilder.getBundle(title);
 	}
 

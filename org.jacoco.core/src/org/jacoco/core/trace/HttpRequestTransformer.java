@@ -40,8 +40,7 @@ public class HttpRequestTransformer implements AgentBuilder.Transformer {
 
 	public static class EnterAdvice {
 		@Advice.OnMethodEnter
-		static void enter(@Advice.Origin final Executable executable,
-				@Advice.AllArguments Object[] args) {
+		static void enter(@Advice.AllArguments Object[] args) {
 			// Get the HttpServletRequest,HttpServletResponse from the method
 			// arguments
 			if (args.length >= 2) {
