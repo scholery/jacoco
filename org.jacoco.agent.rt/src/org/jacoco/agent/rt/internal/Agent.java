@@ -29,7 +29,6 @@ import org.jacoco.core.runtime.AbstractRuntime;
 import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.runtime.AgentOptions.OutputMode;
 import org.jacoco.core.runtime.RuntimeData;
-import org.jacoco.core.trace.TraceValue;
 
 /**
  * The agent manages the life cycle of JaCoCo runtime.

@@ -98,7 +98,6 @@ public class CoverageNodeImpl implements ICoverageNode {
 		return elementType;
 	}
 
-	@Override
 	public String getName() {
 		return name;
 	}

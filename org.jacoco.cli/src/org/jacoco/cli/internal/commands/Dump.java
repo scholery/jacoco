@@ -21,7 +21,6 @@ import org.jacoco.cli.internal.Command;
 import org.jacoco.core.runtime.AgentOptions;
 import org.jacoco.core.tools.ExecDumpClient;
 import org.jacoco.core.tools.ExecFileLoader;
-import org.jacoco.core.trace.TraceValue;
 import org.kohsuke.args4j.Option;
 
 /**

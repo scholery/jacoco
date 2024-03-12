@@ -20,7 +20,6 @@ import org.jacoco.core.runtime.IRemoteCommandVisitor;
 import org.jacoco.core.runtime.RemoteControlReader;
 import org.jacoco.core.runtime.RemoteControlWriter;
 import org.jacoco.core.runtime.RuntimeData;
-import org.jacoco.core.trace.TraceValue;
 
 /**
  * Handler for a single socket based remote connection.

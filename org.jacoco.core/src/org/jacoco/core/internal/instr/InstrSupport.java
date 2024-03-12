@@ -58,8 +58,8 @@ public final class InstrSupport {
 	 * </p>
 	 * </blockquote>
 	 */
-	public static final int DATAFIELD_ACC = Opcodes.ACC_PRIVATE
-			| Opcodes.ACC_STATIC | Opcodes.ACC_TRANSIENT;
+	public static final int DATAFIELD_ACC = Opcodes.ACC_SYNTHETIC
+			| Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_TRANSIENT;
 
 	/**
 	 * Access modifiers of the field that stores coverage information of a Java
@@ -77,8 +77,8 @@ public final class InstrSupport {
 	 * </p>
 	 * </blockquote>
 	 */
-	public static final int DATAFIELD_INTF_ACC = Opcodes.ACC_PUBLIC
-			| Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
+	public static final int DATAFIELD_INTF_ACC = Opcodes.ACC_SYNTHETIC
+			| Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
 
 	/**
 	 * Data type of the field that stores coverage information for a class (
@@ -101,8 +101,8 @@ public final class InstrSupport {
 	/**
 	 * Access modifiers of the initialization method.
 	 */
-	public static final int INITMETHOD_ACC = Opcodes.ACC_PRIVATE
-			| Opcodes.ACC_STATIC;
+	public static final int INITMETHOD_ACC = Opcodes.ACC_SYNTHETIC
+			| Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC;
 
 	/**
 	 * Name of the interface initialization method.
@@ -163,7 +163,7 @@ public final class InstrSupport {
 	 *
 	 * @see #CLINIT_NAME
 	 */
-	static final int CLINIT_ACC = Opcodes.ACC_STATIC;
+	static final int CLINIT_ACC = Opcodes.ACC_SYNTHETIC | Opcodes.ACC_STATIC;
 
 	/**
 	 * Gets major version number from given bytes of class (unsigned two bytes
