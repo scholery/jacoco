@@ -69,6 +69,10 @@ public class RuntimeData {
 		return sessionId;
 	}
 
+	public long getStartTimeStamp() {
+		return startTimeStamp;
+	}
+
 	/**
 	 * Collects the current execution data and writes it to the given
 	 * {@link IExecutionDataVisitor} object.

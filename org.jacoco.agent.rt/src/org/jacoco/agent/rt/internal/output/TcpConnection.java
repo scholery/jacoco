@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
+import org.jacoco.core.data.SessionInfo;
 import org.jacoco.core.runtime.IRemoteCommandVisitor;
 import org.jacoco.core.runtime.RemoteControlReader;
 import org.jacoco.core.runtime.RemoteControlWriter;
@@ -83,6 +84,17 @@ class TcpConnection implements IRemoteCommandVisitor {
 		if (initialized && !socket.isClosed()) {
 			visitDumpCommand(traceId, true, reset);
 		}
+	}
+
+	/**
+	 * wirter session to out
+	 *
+	 * @throws IOException
+	 */
+	public void visitSessionInfo() throws IOException {
+		final SessionInfo info = new SessionInfo(data.getSessionId(),
+				data.getStartTimeStamp(), System.currentTimeMillis());
+		this.writer.visitSessionInfo(info);
 	}
 
 	/**

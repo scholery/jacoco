@@ -13,7 +13,11 @@
 package org.jacoco.agent.rt.internal.output;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.jacoco.agent.rt.internal.IExceptionLogger;
 import org.jacoco.core.runtime.AgentOptions;
@@ -35,6 +39,8 @@ public class TcpClientOutput implements IAgentOutput {
 
 	private Thread worker;
 
+	private ScheduledExecutorService executor;
+
 	/**
 	 * New controller instance.
 	 *
@@ -47,9 +53,11 @@ public class TcpClientOutput implements IAgentOutput {
 
 	public void startup(final AgentOptions options, final RuntimeData data)
 			throws IOException {
-		final Socket socket = createSocket(options);
+		Socket socket = createSocket(options);
 		connection = new TcpConnection(socket, data);
 		connection.init();
+		// keep alive
+		executor = Executors.newSingleThreadScheduledExecutor();
 		worker = new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -62,10 +70,14 @@ public class TcpClientOutput implements IAgentOutput {
 		worker.setName(getClass().getName());
 		worker.setDaemon(true);
 		worker.start();
+		// heart beat
+		startHeartBeat(options.getHeartBeatInterval());
 	}
 
 	public void shutdown() throws Exception {
 		connection.close();
+		// 关闭 executor
+		executor.shutdown();
 		worker.join();
 	}
 
@@ -84,7 +96,48 @@ public class TcpClientOutput implements IAgentOutput {
 	 */
 	protected Socket createSocket(final AgentOptions options)
 			throws IOException {
-		return new Socket(options.getAddress(), options.getPort());
+		return tryConnect(options.getAddress(), options.getPort(),
+				options.getRetryCount(), options.getRetryDelay());
+	}
+
+	private Socket tryConnect(final String address, final int port,
+			final int retryCount, final int retryDelay) throws IOException {
+		int count = 0;
+		while (true) {
+			try {
+				return new Socket(address, port);
+			} catch (final IOException e) {
+				if (++count > retryCount) {
+					System.err
+							.println("====> try connect error,retry count is : "
+									+ retryCount);
+					throw e;
+				}
+				sleep(retryDelay);
+			}
+		}
+	}
+
+	private void sleep(final int retryDelay) throws InterruptedIOException {
+		try {
+			Thread.sleep(retryDelay);
+		} catch (final InterruptedException e) {
+			throw new InterruptedIOException();
+		}
+	}
+
+	protected void startHeartBeat(int interval) {
+		System.out.println("====> init heart beat,interval is : " + interval);
+		executor.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					connection.visitSessionInfo();
+				} catch (IOException e) {
+					logger.logExeption(e);
+				}
+			}
+		}, 0, interval, TimeUnit.SECONDS);
 	}
 
 }

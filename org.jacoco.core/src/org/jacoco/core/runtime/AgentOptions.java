@@ -189,10 +189,29 @@ public final class AgentOptions {
 	 */
 	public static final String JMX = "jmx";
 
+	/**
+	 * Specifies how often the heart beat will be sent.
+	 */
+	public static final String HEARTBEAT_INTERVAL = "heartbeatinterval";
+
+	// default interval,second
+	public static final int DEFAULT_HEARTBEAT_INTERVAL = 10;
+
+	/**
+	 * Specifies the retry count when socket is failed.
+	 */
+	public static final String RETRY_COUNT = "retrycount";
+	public static final int DEFAULT_RETRY_COUNT = 0;
+	/**
+	 * Specifies the retry delay when socket is failed.
+	 */
+	public static final String RETRY_DELAY = "retrydelay";
+	public static final int DEFAULT_RETRY_DELAY = 1000;
 	private static final Collection<String> VALID_OPTIONS = Arrays.asList(
 			DESTFILE, APPEND, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
 			INCLBOOTSTRAPCLASSES, INCLNOLOCATIONCLASSES, SESSIONID, DUMPONEXIT,
-			OUTPUT, ADDRESS, PORT, CLASSDUMPDIR, JMX);
+			OUTPUT, ADDRESS, PORT, CLASSDUMPDIR, JMX, HEARTBEAT_INTERVAL,
+			RETRY_COUNT, RETRY_DELAY);
 
 	private final Map<String, String> options;
 
@@ -555,6 +574,30 @@ public final class AgentOptions {
 	 */
 	public void setJmx(final boolean jmx) {
 		setOption(JMX, jmx);
+	}
+
+	public int getHeartBeatInterval() {
+		return getOption(HEARTBEAT_INTERVAL, DEFAULT_HEARTBEAT_INTERVAL);
+	}
+
+	public void setHeartBeatInterval(final int interval) {
+		setOption(HEARTBEAT_INTERVAL, interval);
+	}
+
+	public int getRetryCount() {
+		return getOption(RETRY_COUNT, DEFAULT_RETRY_COUNT);
+	}
+
+	public void setRetryCount(final int interval) {
+		setOption(RETRY_COUNT, interval);
+	}
+
+	public int getRetryDelay() {
+		return getOption(RETRY_DELAY, DEFAULT_RETRY_DELAY);
+	}
+
+	public void setRetryDelay(final int interval) {
+		setOption(RETRY_DELAY, interval);
 	}
 
 	private void setOption(final String key, final int value) {
