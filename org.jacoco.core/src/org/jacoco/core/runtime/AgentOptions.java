@@ -190,6 +190,12 @@ public final class AgentOptions {
 	public static final String JMX = "jmx";
 
 	/**
+	 * Specifies the keep alive,so that the connection will be kept..
+	 */
+	public static final String KEEPALIVE = "keepalive";
+	public static final boolean DEFAULT_KEEPALIVE = false;
+
+	/**
 	 * Specifies how often the heart beat will be sent.
 	 */
 	public static final String HEARTBEAT_INTERVAL = "heartbeatinterval";
@@ -210,8 +216,8 @@ public final class AgentOptions {
 	private static final Collection<String> VALID_OPTIONS = Arrays.asList(
 			DESTFILE, APPEND, INCLUDES, EXCLUDES, EXCLCLASSLOADER,
 			INCLBOOTSTRAPCLASSES, INCLNOLOCATIONCLASSES, SESSIONID, DUMPONEXIT,
-			OUTPUT, ADDRESS, PORT, CLASSDUMPDIR, JMX, HEARTBEAT_INTERVAL,
-			RETRY_COUNT, RETRY_DELAY);
+			OUTPUT, ADDRESS, PORT, CLASSDUMPDIR, JMX, KEEPALIVE,
+			HEARTBEAT_INTERVAL, RETRY_COUNT, RETRY_DELAY);
 
 	private final Map<String, String> options;
 
@@ -574,6 +580,14 @@ public final class AgentOptions {
 	 */
 	public void setJmx(final boolean jmx) {
 		setOption(JMX, jmx);
+	}
+
+	public boolean getKeepAlive() {
+		return getOption(KEEPALIVE, DEFAULT_KEEPALIVE);
+	}
+
+	public void setHeartBeatInterval(final boolean keepAlive) {
+		setOption(KEEPALIVE, keepAlive);
 	}
 
 	public int getHeartBeatInterval() {

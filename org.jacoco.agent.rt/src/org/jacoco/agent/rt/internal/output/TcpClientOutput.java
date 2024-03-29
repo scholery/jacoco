@@ -53,18 +53,12 @@ public class TcpClientOutput implements IAgentOutput {
 
 	public void startup(final AgentOptions options, final RuntimeData data)
 			throws IOException {
-		Socket socket = createSocket(options);
-		connection = new TcpConnection(socket, data);
-		connection.init();
 		// keep alive
 		executor = Executors.newSingleThreadScheduledExecutor();
 		worker = new Thread(new Runnable() {
 			public void run() {
-				try {
-					connection.run();
-				} catch (final IOException e) {
-					logger.logExeption(e);
-				}
+				connectToServer(options, data);
+				System.out.println("====> connect completed");
 			}
 		});
 		worker.setName(getClass().getName());
@@ -107,9 +101,9 @@ public class TcpClientOutput implements IAgentOutput {
 			try {
 				return new Socket(address, port);
 			} catch (final IOException e) {
-				if (++count > retryCount) {
-					System.err
-							.println("====> try connect error,retry count is : "
+				if (retryCount > 0 && ++count > retryCount) {
+					System.err.println(
+							"====> try connect timeout, retry count is : "
 									+ retryCount);
 					throw e;
 				}
@@ -131,13 +125,40 @@ public class TcpClientOutput implements IAgentOutput {
 		executor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
+				if (connection == null || connection.isClosed()) {
+					System.err.println(
+							"====> heart beat failed, connection is not init or has been closed.");
+					return;
+				}
 				try {
 					connection.visitSessionInfo();
-				} catch (IOException e) {
+				} catch (Exception e) {
+					System.err.println("====> heart beat failed, error is:"
+							+ e.getMessage());
 					logger.logExeption(e);
 				}
 			}
 		}, 0, interval, TimeUnit.SECONDS);
+	}
+
+	protected void connectToServer(final AgentOptions options,
+			final RuntimeData data) {
+		System.out.println("====> connect to server");
+		// reconnect
+		try {
+			Socket socket = createSocket(options);
+			connection = new TcpConnection(socket, data);
+			connection.init();
+			connection.run();
+			if (options.getKeepAlive() && connection.isClosed()) {
+				throw new Exception("connect is closed");
+			}
+		} catch (Exception ex) {
+			System.err.println("====> connect to server error, error is:"
+					+ ex.getMessage());
+			logger.logExeption(ex);
+			connectToServer(options, data);
+		}
 	}
 
 }

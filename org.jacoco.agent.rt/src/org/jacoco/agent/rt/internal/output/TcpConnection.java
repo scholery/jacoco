@@ -122,4 +122,8 @@ class TcpConnection implements IRemoteCommandVisitor {
 		writer.sendCmdOk();
 	}
 
+	public boolean isClosed() {
+		return socket.isClosed();
+	}
+
 }
